@@ -8,16 +8,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * DashboardDAO (SQL Server) – bám sát schema của bạn.
- * - Phòng bận/trống: dựa Room.isAvailable (trạng thái tức thời)
- * - Công suất: occupied/total * 100
- * - Doanh thu tháng: tổng Order.total trong tháng hiện tại (không bắt buộc "Thanh toán")
- * - Đặt phòng hôm nay: đếm Order theo orderDate = hôm nay
- * - Hoạt động sắp tới: check-in trong N ngày tới
- */
-public class DashboardDAO {
 
+public class DashboardDAO {
     private final ConnectDB db = ConnectDB.getInstance();
 
     private Connection con() throws SQLException {
@@ -25,7 +17,6 @@ public class DashboardDAO {
     }
 
     /* ================= KPIs ================= */
-
     public int totalRooms() {
         final String sql = "SELECT COUNT(*) FROM Room";
         try (PreparedStatement ps = con().prepareStatement(sql);
@@ -37,7 +28,7 @@ public class DashboardDAO {
         }
     }
 
-    /** Phòng đang bận theo trạng thái hiện tại (isAvailable = 0) */
+    // Phòng trống
     public int occupiedNow() {
         final String sql = "SELECT COUNT(*) FROM Room WHERE isAvailable = 0";
         try (PreparedStatement ps = con().prepareStatement(sql);
@@ -61,7 +52,7 @@ public class DashboardDAO {
         return occupiedNow() * 100.0 / total;
     }
 
-    /** Doanh thu của tháng hiện tại – cộng Order.total theo orderDate trong tháng */
+    // Doanh thu theo tháng hiện tại
     public BigDecimal revenueThisMonth() {
         final String sql =
                 "SELECT COALESCE(SUM(CAST(total AS DECIMAL(19,2))),0) " +
@@ -76,7 +67,7 @@ public class DashboardDAO {
         }
     }
 
-    /** Số đơn đặt trong hôm nay (theo orderDate) */
+    // Số đơn đặt trong hôm nay
     public int bookingsToday() {
         final String sql =
                 "SELECT COUNT(*) FROM [Order] " +
@@ -91,7 +82,6 @@ public class DashboardDAO {
     }
 
     /* ============== Bảng hoạt động sắp tới ============== */
-
     public List<UpcomingBooking> upcomingBookings(int daysAhead) {
         final String sql =
                 "SELECT odr.orderID, c.fullName, odr.roomID, odr.checkInDate, odr.checkOutDate, odr.status " +
@@ -124,7 +114,7 @@ public class DashboardDAO {
         return list;
     }
 
-    /* ============== DTO ============== */
+    // tmp class để hiển thị ban đầu
     public static class UpcomingBooking {
         public String orderCode;
         public String customer;

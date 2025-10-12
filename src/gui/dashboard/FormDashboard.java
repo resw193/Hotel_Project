@@ -18,10 +18,7 @@ import java.util.List;
 import java.util.Locale;
 import java.net.URI;
 
-/**
- * Giữ giao diện y hệt bản bạn gửi, chỉ thêm đủ các nút "Tác vụ nhanh"
- * và thêm icon cho App Store / Google Play.
- */
+
 public class FormDashboard extends JPanel {
 
     // labels để cập nhật số liệu
@@ -34,7 +31,7 @@ public class FormDashboard extends JPanel {
         add(createBanner(), "growx, gapbottom 14");
         add(createTopRow(), "growx, gapbottom 10");
         add(createBottomRow(), "grow, push");
-        reloadStats();   // nạp dữ liệu thực tế
+        reloadStats();
     }
 
     private JComponent createBanner() {
@@ -88,7 +85,7 @@ public class FormDashboard extends JPanel {
 
     private ImageIcon loadIcon(String path) {
         java.net.URL u = getClass().getResource(path);
-        return (u != null) ? new ImageIcon(u) : null;   // nếu chưa có file icon, nút vẫn hiển thị bình thường
+        return (u != null) ? new ImageIcon(u) : null;
     }
 
     private JComponent createTopRow() {
@@ -131,7 +128,7 @@ public class FormDashboard extends JPanel {
         JPanel row = new JPanel(new MigLayout("insets 0,gap 12", "[grow][grow]"));
         row.setOpaque(false);
 
-        // Quick Actions (giữ style, chỉ thêm đủ mục)
+        // Quick Actions
         JPanel quick = new JPanel(new MigLayout(
                 "wrap 2,insets 14 16 16 16", "[grow][grow]", "[]12[]12[]12[]"));
         quick.putClientProperty(FlatClientProperties.STYLE, "arc:16;background:#0F2A47");
@@ -184,7 +181,6 @@ public class FormDashboard extends JPanel {
         try { Desktop.getDesktop().browse(new URI(url)); } catch (Exception e) { e.printStackTrace(); }
     }
 
-    /** Nạp lại số liệu từ DB */
     private void reloadStats() {
         DashboardDAO dao = new DashboardDAO();
         int total = dao.totalRooms();
