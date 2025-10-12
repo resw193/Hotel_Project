@@ -16,7 +16,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.border.AbstractBorder;
-import javax.swing.border.Border;
 
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
@@ -28,13 +27,16 @@ import gui.menu.mode.ToolBarAccentColor;
 
 public class Menu extends JPanel {
 
+	// THÊM "Trang chủ" ở đầu, giữ "Đăng xuất" cuối
 	private final String menuItems[][] = {
+			{"Trang chủ"},
 			{"Quản lý phòng"},
 			{"Quản lý đặt phòng"},
 			{"Quản lý hóa đơn"},
 			{"Quản lý khách hàng", "Thông tin khách hàng", "Thống kê"},
 			{"Quản lý dịch vụ"},
-			{"Thông tin cá nhân"}
+			{"Thông tin cá nhân"},
+			{"Đăng xuất"}
 	};
 
 	private final List<MenuEvent> events = new ArrayList<>();
@@ -42,11 +44,11 @@ public class Menu extends JPanel {
 	private final String headerName = "MIMOSA Hotel";
 
 	protected final boolean hideMenuTitleOnMinimum = true;
-	protected final int menuTitleLeftInset = 5;
-	protected final int menuTitleVgap = 5;
-	protected final int menuMaxWidth = 250;
-	protected final int menuMinWidth = 60;
-	protected final int headerFullHgap = 5;
+	protected final int menuTitleLeftInset = 10;
+	protected final int menuTitleVgap = 12;
+	protected final int menuMaxWidth = 270;
+	protected final int menuMinWidth = 72;
+	protected final int headerFullHgap = 8;
 
 	private JLabel header;
 	private JScrollPane scroll;
@@ -54,45 +56,33 @@ public class Menu extends JPanel {
 	private LightDarkMode lightDarkMode;
 	private ToolBarAccentColor toolBarAccentColor;
 
-	public Menu() {
-		init();
-	}
+	public Menu() { init(); }
 
 	private void init() {
 		setLayout(new MenuLayout());
-		setBackground(Color.WHITE); // Chuyên nghiệp: Nền trắng
-		setBorder(new AbstractBorder() {}); // Viền solid default
+		setBackground(Color.WHITE);
+		setBorder(new AbstractBorder() {});
 
-		putClientProperty(FlatClientProperties.STYLE,
-				"arc:8;" +
-						"background:#FFFFFF"); // Nền trắng
+		putClientProperty(FlatClientProperties.STYLE, "arc:12;background:#0B1F33");
 
-		// Header
 		header = new JLabel(headerName);
-		header.setFont(new Font("SansSerif", Font.BOLD, 18)); // Font chuyên nghiệp
+		header.setFont(new Font("SansSerif", Font.BOLD, 20));
 		header.setIcon(new ImageIcon(getClass().getResource("/other/logo/mimosa_hotel_logo.jpg")));
-		header.setForeground(Color.BLUE); // Màu xanh dương chuyên nghiệp
-		header.putClientProperty(FlatClientProperties.STYLE,
-				"border:5,5,5,5");
+		header.setForeground(new Color(240, 244, 255));
+		header.putClientProperty(FlatClientProperties.STYLE, "border:8,10,8,10");
 
-		// Menu
 		scroll = new JScrollPane();
 		panelMenu = new JPanel(new MenuItemLayout(this));
-		panelMenu.setBackground(Color.LIGHT_GRAY); // Xám nhạt
-		panelMenu.putClientProperty(FlatClientProperties.STYLE,
-				"border:5,5,5,5;" +
-						"background:#F0F0F0");
+		panelMenu.setBackground(new Color(0x0F2A47));
+		panelMenu.putClientProperty(FlatClientProperties.STYLE, "border:6,8,6,8;background:#0F2A47");
 
 		scroll.setViewportView(panelMenu);
 		scroll.setBackground(Color.WHITE);
+		scroll.setBorder(null);
 		JScrollBar vscroll = scroll.getVerticalScrollBar();
-		vscroll.setUnitIncrement(10);
+		vscroll.setUnitIncrement(14);
 		vscroll.putClientProperty(FlatClientProperties.STYLE,
-				"width:10;" +
-						"background:#F0F0F0;" +
-						"track:#F0F0F0;" +
-						"thumb:#A0A0A0;" +
-						"trackArc:999");
+				"width:10; background:#0B1F33; track:#0B1F33; thumb:#1F4069; trackArc:999");
 
 		createMenu();
 		lightDarkMode = new LightDarkMode();
@@ -114,9 +104,7 @@ public class Menu extends JPanel {
 		}
 	}
 
-	public boolean isMenuFull() {
-		return menuFull;
-	}
+	public boolean isMenuFull() { return menuFull; }
 
 	public void setMenuFull(boolean menuFull) {
 		this.menuFull = menuFull;
@@ -128,17 +116,13 @@ public class Menu extends JPanel {
 			header.setHorizontalAlignment(JLabel.CENTER);
 		}
 		for (Component com : panelMenu.getComponents()) {
-			if (com instanceof MenuItem) {
-				((MenuItem) com).setFull(menuFull);
-			}
+			if (com instanceof MenuItem) ((MenuItem) com).setFull(menuFull);
 		}
 		lightDarkMode.setMenuFull(menuFull);
 		toolBarAccentColor.setMenuFull(menuFull);
 	}
 
-	public void setSelectedMenu(int index, int subIndex) {
-		runEvent(index, subIndex);
-	}
+	public void setSelectedMenu(int index, int subIndex) { runEvent(index, subIndex); }
 
 	protected void setSelected(int index, int subIndex) {
 		int size = panelMenu.getComponentCount();
@@ -146,98 +130,51 @@ public class Menu extends JPanel {
 			Component com = panelMenu.getComponent(i);
 			if (com instanceof MenuItem) {
 				MenuItem item = (MenuItem) com;
-				if (item.getMenuIndex() == index) {
-					item.setSelectedIndex(subIndex);
-				} else {
-					item.setSelectedIndex(-1);
-				}
+				if (item.getMenuIndex() == index) item.setSelectedIndex(subIndex);
+				else item.setSelectedIndex(-1);
 			}
 		}
 	}
 
 	protected void runEvent(int index, int subIndex) {
 		MenuAction menuAction = new MenuAction();
-		for (MenuEvent event : events) {
-			event.menuSelected(index, subIndex, menuAction);
-		}
-		if (!menuAction.isCancel()) {
-			setSelected(index, subIndex);
-		}
+		for (MenuEvent event : events) event.menuSelected(index, subIndex, menuAction);
+		if (!menuAction.isCancel()) setSelected(index, subIndex);
 	}
 
-	public void addMenuEvent(MenuEvent event) {
-		events.add(event);
-	}
+	public void addMenuEvent(MenuEvent event) { events.add(event); }
 
 	public void hideMenuItem() {
-		for (Component com : panelMenu.getComponents()) {
-			if (com instanceof MenuItem) {
-				((MenuItem) com).hideMenuItem();
-			}
-		}
+		for (Component com : panelMenu.getComponents())
+			if (com instanceof MenuItem) ((MenuItem) com).hideMenuItem();
 		revalidate();
 	}
 
-	public boolean isHideMenuTitleOnMinimum() {
-		return hideMenuTitleOnMinimum;
-	}
-
-	public int getMenuTitleLeftInset() {
-		return menuTitleLeftInset;
-	}
-
-	public int getMenuTitleVgap() {
-		return menuTitleVgap;
-	}
-
-	public int getMenuMaxWidth() {
-		return menuMaxWidth;
-	}
-
-	public int getMenuMinWidth() {
-		return menuMinWidth;
-	}
+	public boolean isHideMenuTitleOnMinimum() { return hideMenuTitleOnMinimum; }
+	public int getMenuTitleLeftInset() { return menuTitleLeftInset; }
+	public int getMenuTitleVgap() { return menuTitleVgap; }
+	public int getMenuMaxWidth() { return menuMaxWidth; }
+	public int getMenuMinWidth() { return menuMinWidth; }
 
 	private class MenuLayout implements LayoutManager {
-		@Override
-		public void addLayoutComponent(String name, Component comp) {
+		@Override public void addLayoutComponent(String name, Component comp) {}
+		@Override public void removeLayoutComponent(Component comp) {}
+		@Override public Dimension preferredLayoutSize(Container parent) {
+			synchronized (parent.getTreeLock()) { return new Dimension(5,5); }
 		}
-
-		@Override
-		public void removeLayoutComponent(Component comp) {
+		@Override public Dimension minimumLayoutSize(Container parent) {
+			synchronized (parent.getTreeLock()) { return new Dimension(0,0); }
 		}
-
-		@Override
-		public Dimension preferredLayoutSize(Container parent) {
-			synchronized (parent.getTreeLock()) {
-				return new Dimension(5, 5);
-			}
-		}
-
-		@Override
-		public Dimension minimumLayoutSize(Container parent) {
-			synchronized (parent.getTreeLock()) {
-				return new Dimension(0, 0);
-			}
-		}
-
-		@Override
-		public void layoutContainer(Container parent) {
+		@Override public void layoutContainer(Container parent) {
 			synchronized (parent.getTreeLock()) {
 				Insets insets = parent.getInsets();
-				int x = insets.left;
-				int y = insets.top;
-				int gap = UIScale.scale(5);
-				int sheaderFullHgap = UIScale.scale(headerFullHgap);
+				int x = insets.left, y = insets.top;
+				int gap = UIScale.scale(5), sheaderFullHgap = UIScale.scale(headerFullHgap);
 				int width = parent.getWidth() - (insets.left + insets.right);
 				int height = parent.getHeight() - (insets.top + insets.bottom);
-				int iconWidth = width;
-				int iconHeight = header.getPreferredSize().height;
+				int iconWidth = width, iconHeight = header.getPreferredSize().height;
 				int hgap = menuFull ? sheaderFullHgap : 0;
-				int accentColorHeight = 0;
-				if (toolBarAccentColor.isVisible()) {
-					accentColorHeight = toolBarAccentColor.getPreferredSize().height + gap;
-				}
+				int accentColorHeight = toolBarAccentColor.isVisible() ? toolBarAccentColor.getPreferredSize().height + gap : 0;
 
 				header.setBounds(x + hgap, y, iconWidth - (hgap * 2), iconHeight);
 				int ldgap = UIScale.scale(10);
@@ -246,8 +183,7 @@ public class Menu extends JPanel {
 				int ldx = x + ldgap;
 				int ldy = y + height - ldHeight - ldgap - accentColorHeight;
 
-				int menux = x;
-				int menuy = y + iconHeight + gap;
+				int menux = x, menuy = y + iconHeight + gap;
 				int menuWidth = width;
 				int menuHeight = height - (iconHeight + gap) - (ldHeight + ldgap * 2) - (accentColorHeight);
 				scroll.setBounds(menux, menuy, menuWidth, menuHeight);

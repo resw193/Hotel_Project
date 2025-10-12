@@ -76,6 +76,9 @@ public class Application extends JFrame {
         setSelectedMenu(0, 0);
         app.mainForm.hideMenu();
         SwingUtilities.updateComponentTreeUI(app.mainForm);
+
+        // Hiển thị dashboard trên trang chủ
+        showForm(new gui.dashboard.FormDashboard());
         FlatAnimatedLafChange.hideSnapshotWithAnimation();
     }
 

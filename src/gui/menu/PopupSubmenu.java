@@ -34,34 +34,12 @@ public class PopupSubmenu extends JPanel {
     }
 
     private void init() {
-        // Tải font Press Start 2P
-        try {
-            InputStream fontStream = getClass().getResourceAsStream("/resources/fonts/PressStart2P-Regular.ttf");
-            if (fontStream != null) {
-                pressStart2P = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(12f);
-                GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(pressStart2P);
-                fontStream.close();
-            } else {
-                System.err.println("Không tìm thấy file font PressStart2P-Regular.ttf");
-                pressStart2P = new Font("Courier New", Font.PLAIN, 12);
-            }
-        } catch (Exception e) {
-            System.err.println("Lỗi khi tải font: " + e.getMessage());
-            pressStart2P = new Font("Courier New", Font.PLAIN, 12);
-        }
-
-        setLayout(new MenuLayout());
         popup = new JPopupMenu();
-        popup.setBorder((Border) new DashedBorder(new Color(139, 0, 0), 2, 4, 4)); // Viền nét đứt đỏ máu
         popup.putClientProperty(FlatClientProperties.STYLE,
-                "background:#1C2526;" + // Đen bóng đêm
-                        "borderColor:#1C2526;" +
-                        "arc:8");
+                "background:#0F2A47;borderColor:#0F2A47;arc:10");
 
         putClientProperty(FlatClientProperties.STYLE,
-                "border:0,3,0,3;" +
-                        "background:#1C2526;" +
-                        "foreground:#8B0000"); // Đường kẻ đỏ máu
+                "border:0,4,4,4;background:#0F2A47;foreground:#F2C94C");
 
         for (int i = 1; i < menus.length; i++) {
             JButton button = createButtonItem(menus[i]);
@@ -76,21 +54,13 @@ public class PopupSubmenu extends JPanel {
     }
 
     private JButton createButtonItem(String text) {
-        JButton button = new JButton(text);
-        button.setFont(pressStart2P.deriveFont(12f));
-        button.putClientProperty(FlatClientProperties.STYLE,
-                "background:#4A4E46;" + // Xám tro
-                        "foreground:#8B0000;" + // Đỏ máu
-                        "rolloverForeground:#483D8B;" + // Tím ma mị khi hover
-                        "selectedBackground:#4A4E46;" +
-                        "selectedForeground:#483D8B;" + // Tím ma mị khi chọn
-                        "borderWidth:0;" +
-                        "arc:8;" +
-                        "focusWidth:0;" +
-                        "innerFocusWidth:0;" +
-                        "iconTextGap:10;" +
-                        "margin:5,11,5,11");
-        return button;
+        JButton b = new JButton(text);
+        b.putClientProperty(FlatClientProperties.STYLE,
+                "background:#102C49;foreground:#EAF2FF;" +
+                        "rolloverForeground:#0B1F33;selectedBackground:#F2C94C;" +
+                        "selectedForeground:#0B1F33;borderWidth:0;arc:10;" +
+                        "focusWidth:0;innerFocusWidth:0;margin:6,12,6,12");
+        return b;
     }
 
     public void show(Component com, int x, int y) {
@@ -159,7 +129,7 @@ public class PopupSubmenu extends JPanel {
             int com = getComponent(i).getY() + (ssubMenuItemHeight / 2);
             p.append(createCurve(round, x, com, ltr), false);
         }
-        g2.setColor(new Color(139, 0, 0)); // Đỏ máu
+        g2.setColor(new Color(242, 201, 76));
         g2.setStroke(new BasicStroke(UIScale.scale(1f)));
         g2.draw(p);
         g2.dispose();

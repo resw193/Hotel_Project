@@ -9,11 +9,7 @@ import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 
-import javax.swing.JButton;
-import javax.swing.JLayeredPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 import com.formdev.flatlaf.FlatClientProperties;
@@ -21,6 +17,7 @@ import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.formdev.flatlaf.util.UIScale;
 
 import gui.customer.FormCustomerManagement;
+import gui.dashboard.FormDashboard;
 import gui.login.main.Application;
 import gui.menu.Menu;
 import gui.menu.MenuAction;
@@ -72,27 +69,28 @@ public class MainForm extends JLayeredPane {
     private void initMenuEvent() {
         menu.addMenuEvent((int index, int subIndex, MenuAction action) -> {
             if (index == 0) {
-                Application.showForm(new FormRoomManagement());
+                Application.showForm(new FormDashboard());
             } else if (index == 1) {
-                Application.showForm(new FormRoomBookingManagement());
+                Application.showForm(new FormRoomManagement());
             } else if (index == 2) {
-                Application.showForm(new FormOrderManagement());
+                Application.showForm(new FormRoomBookingManagement());
             } else if (index == 3) {
-                switch (subIndex) {
-                    case 0:
-                        Application.showForm(new FormThongKe());
-                        break;
-                    case 1:
-                        Application.showForm(new FormCustomerManagement());
-                        break;
-                    default:
-                        action.cancel();
-                        break;
-                }
+                Application.showForm(new FormOrderManagement());
             } else if (index == 4) {
-                Application.showForm(new FormServiceManagement());
+                switch (subIndex) {
+                    case 0 -> Application.showForm(new FormCustomerManagement());
+                    case 1 -> Application.showForm(new FormThongKe());
+                    default -> action.cancel();
+                }
             } else if (index == 5) {
+                Application.showForm(new FormServiceManagement());
+            } else if (index == 6) {
                 Application.showForm(new FormProfileManagement());
+            } else if (index == 7) {
+                int choice = JOptionPane.showConfirmDialog(this, "Bạn có chắc muốn đăng xuất không?", "Warning", JOptionPane.YES_NO_OPTION);
+                if(choice == JOptionPane.YES_OPTION){
+                    Application.logout();
+                }
             }
         });
     }

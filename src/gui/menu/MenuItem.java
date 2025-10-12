@@ -25,13 +25,12 @@ public class MenuItem extends JPanel {
     private float animate;
     private PopupSubmenu popup;
 
-    private final int menuItemHeight = 38;
-    private final int subMenuItemHeight = 35;
-    private final int subMenuLeftGap = 34;
-    private final int firstGap = 5;
-    private final int bottomGap = 5;
+    private final int menuItemHeight = 48;
+    private final int subMenuItemHeight = 42;
+    private final int subMenuLeftGap = 38;
+    private final int firstGap = 10;
+    private final int bottomGap = 10;
 
-    private Font pressStart2P;
 
     public MenuItem(Menu menu, String[] menus, int menuIndex, List<MenuEvent> events) {
         this.menu = menu;
@@ -43,20 +42,7 @@ public class MenuItem extends JPanel {
 
     private void init() {
         // Tải font Press Start 2P
-        try {
-            InputStream fontStream = getClass().getResourceAsStream("/resources/fonts/PressStart2P-Regular.ttf");
-            if (fontStream != null) {
-                pressStart2P = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(12f);
-                GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(pressStart2P);
-                fontStream.close();
-            } else {
-                System.err.println("Không tìm thấy file font PressStart2P-Regular.ttf");
-                pressStart2P = new Font("Courier New", Font.PLAIN, 12);
-            }
-        } catch (Exception e) {
-            System.err.println("Lỗi khi tải font: " + e.getMessage());
-            pressStart2P = new Font("Courier New", Font.PLAIN, 12);
-        }
+
 
         setLayout(new MenuLayout());
         putClientProperty(FlatClientProperties.STYLE,
@@ -91,26 +77,23 @@ public class MenuItem extends JPanel {
     }
 
     private Icon getIcon() {
-        FlatSVGIcon icon = new FlatSVGIcon("gui/menu/icon/" + menuIndex + ".svg", 0.6f);
-        icon.setColorFilter(new FlatSVGIcon.ColorFilter(color -> new Color(144, 238, 144)));
+        FlatSVGIcon icon = new FlatSVGIcon("gui/menu/icon/" + menuIndex + ".svg", 0.75f);
+        icon.setColorFilter(new FlatSVGIcon.ColorFilter(c -> new Color(242, 201, 76))); // vàng ánh kim
         return icon;
     }
 
     private JButton createButtonItem(String text) {
         JButton button = new JButton(text);
-        button.setFont(pressStart2P.deriveFont(12f));
+        button.setFont(new Font("Inter", Font.BOLD, 13));
+        // Nút tối, chữ sáng – hover vàng
         button.putClientProperty(FlatClientProperties.STYLE,
-                "background:#4A4E46;" +
-                        "foreground:#90EE90;" +
-                        "rolloverForeground:#1C2526;" + // Đen đậm khi hover
-                        "selectedBackground:#90EE90;" +
-                        "selectedForeground:#2F4F4F;" +
-                        "borderWidth:0;" +
-                        "focusWidth:0;" +
-                        "innerFocusWidth:0;" +
-                        "arc:8;" +
-                        "iconTextGap:10;" +
-                        "margin:3,11,3,11");
+                "background:#102C49;" +
+                        "foreground:#EAF2FF;" +
+                        "rolloverForeground:#0B1F33;" +
+                        "selectedBackground:#F2C94C;" +
+                        "selectedForeground:#0B1F33;" +
+                        "borderWidth:0;focusWidth:0;innerFocusWidth:0;" +
+                        "arc:10;iconTextGap:14;margin:6,14,6,14");
         return button;
     }
 
@@ -204,7 +187,7 @@ public class MenuItem extends JPanel {
                 int com = getComponent(i).getY() + (ssubMenuItemHeight / 2);
                 p.append(createCurve(round, x, com, ltr), false);
             }
-            g2.setColor(new Color(107, 142, 35));
+            g2.setColor(new Color(242, 201, 76));
             g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
             g2.setStroke(new BasicStroke(UIScale.scale(1f)));
             g2.draw(p);
@@ -219,7 +202,7 @@ public class MenuItem extends JPanel {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
-            g2.setColor(new Color(144, 238, 144));
+            g2.setColor(new Color(242, 201, 76));
             int smenuItemHeight = UIScale.scale(menuItemHeight);
             boolean ltr = getComponentOrientation().isLeftToRight();
             g2.setStroke(new BasicStroke(UIScale.scale(1f)));
