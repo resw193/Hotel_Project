@@ -1,6 +1,8 @@
 package other;
 
 
+import gui.login.forms.Login;
+
 import javax.mail.*;
 import java.io.UnsupportedEncodingException;
 import java.util.Properties;
@@ -10,7 +12,7 @@ public class EmailService {
 
     private static final String SMTP_HOST = "smtp.gmail.com";
     private static final int SMTP_PORT = 587;
-    private static final String FROM_EMAIL = "baodinh.nguyen321@gmail.com";
+    private static final String FROM_EMAIL = "" + Login.email;
     private static final String FROM_NAME  = "Mimosa Hotel";
     private static final String APP_PASSWORD = "gigp rpnu vbuk dynt";   // đặt app password
 

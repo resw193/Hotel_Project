@@ -23,6 +23,8 @@ public class Login extends JPanel {
     private JButton cmdForgot;   // <-- NEW
     private AccountDAO accountDAO;
 
+    public static String email;
+
     public Login() {
         accountDAO = new AccountDAO();
         init();
@@ -98,15 +100,16 @@ public class Login extends JPanel {
         String username = JOptionPane.showInputDialog(null,
                 "Nhập username để nhận OTP qua email:", "Quên mật khẩu", JOptionPane.QUESTION_MESSAGE);
 
-        if (username == null) return; // cancel
+        if (username == null)
+            return;
         username = username.trim();
         if (username.isEmpty()) {
             JOptionPane.showMessageDialog(null, "Username không được trống");
             return;
         }
 
-        // Lấy email từ username (Account -> Employee)
-        String email = accountDAO.getAccountByUsername(username).getEmployee().getEmail();
+        // Lấy email từ username (Account -> Employee -> getEmail())
+        email = accountDAO.getAccountByUsername(username).getEmployee().getEmail();
         if (email == null || email.isEmpty()) {
             JOptionPane.showMessageDialog(null, "Không tìm thấy email của tài khoản này!");
             return;

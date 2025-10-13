@@ -18,11 +18,10 @@ import com.formdev.flatlaf.util.UIScale;
 
 import gui.customer.FormCustomerManagement;
 import gui.dashboard.FormDashboard;
-import gui.login.main.Application;
 import gui.menu.Menu;
 import gui.menu.MenuAction;
 import gui.order.FormOrderManagement;
-import gui.profile.FormProfileManagement;
+import gui.profile.FormProfileInfo;
 import gui.room.FormRoomManagement;
 import gui.roomBooking.FormRoomBookingManagement;
 import gui.service.FormServiceManagement;
@@ -85,7 +84,7 @@ public class MainForm extends JLayeredPane {
             } else if (index == 5) {
                 Application.showForm(new FormServiceManagement());
             } else if (index == 6) {
-                Application.showForm(new FormProfileManagement());
+                Application.showForm(new FormProfileInfo());
             } else if (index == 7) {
                 int choice = JOptionPane.showConfirmDialog(this, "Bạn có chắc muốn đăng xuất không?", "Warning", JOptionPane.YES_NO_OPTION);
                 if(choice == JOptionPane.YES_OPTION){
