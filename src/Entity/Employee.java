@@ -9,6 +9,7 @@ public class Employee {
 	private String email;
 	private EmployeeType employeeType;
 	private String imgSource;
+	private boolean gender;
 
 	public Employee() {
 
@@ -29,6 +30,16 @@ public class Employee {
 		this.phone = phone;
 		this.email = email;
 		this.employeeType = employeeType;
+	}
+
+	public Employee(String employeeID, String fullName, String phone, String email, EmployeeType employeeType, String imgSource, boolean gioiTinh) {
+		this.employeeID = employeeID;
+		this.fullName = fullName;
+		this.phone = phone;
+		this.email = email;
+		this.employeeType = employeeType;
+		this.imgSource = imgSource;
+		this.gender = gioiTinh;
 	}
 
 	public String getEmployeeID() {
@@ -96,6 +107,14 @@ public class Employee {
 	public void setImgSource(String imgSource) {
 		this.imgSource = imgSource;
 
+	}
+
+	public boolean isGender() {
+		return gender;
+	}
+
+	public void setGender(boolean gender) {
+		this.gender = gender;
 	}
 
 	@Override

@@ -21,7 +21,7 @@ public class EmployeeTypeDAO {
         Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        String sql = "select * from EmployeeType where employeeTypeID = ?";
+        String sql = "select * from EmployeeType where typeID = ?";
 
         try {
             conn = connectDB.getConnection();
