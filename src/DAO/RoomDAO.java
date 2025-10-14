@@ -144,10 +144,12 @@ public class RoomDAO {
         } catch (SQLException e){
             e.printStackTrace();
             return false;
+        } finally {
+            connectDB.close(cs, null);
         }
     }
 
-    // Hủy đặt phòng (call sp_CancelBooking(?)) (nếu hủy đặt phòng thì đầu tiên phải kiểm tra checkIn = null)
+    // Hủy đặt phòng (call sp_CancelBooking(?)) (chỉ hủy đặt phòng khi status của phòng đó = 'Đặt')
     public boolean huyDatPhong(String roomID){
         Connection con = null;
         CallableStatement cs = null;
@@ -162,6 +164,8 @@ public class RoomDAO {
         } catch (SQLException e){
             e.printStackTrace();
             return false;
+        } finally {
+            connectDB.close(cs, null);
         }
     }
 
@@ -180,6 +184,8 @@ public class RoomDAO {
         } catch (SQLException e){
             e.printStackTrace();
             return false;
+        } finally {
+            connectDB.close(cs, null);
         }
     }
 
@@ -198,8 +204,9 @@ public class RoomDAO {
         } catch (SQLException e){
             e.printStackTrace();
             return false;
+        } finally {
+            connectDB.close(cs, null);
         }
     }
 
-    // Thống kê tỷ lệ lấp đầy phòng theo ngày ? (fn_OccupancyRate(@date))     (? chưa rõ ràng)
 }

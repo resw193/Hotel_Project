@@ -74,7 +74,7 @@ public class OrderDAO {
                 LocalDateTime orderDate = rs.getTimestamp("orderDate").toLocalDateTime();
                 Employee employee = employeeDAO.getEmployeeByID(rs.getString("employeeID"));
                 Customer customer = customerDAO.getCustomerByID(rs.getString("customerID"));
-                Promotion promotion = promotionDAO.getPromotionByID(orderID);
+                Promotion promotion = promotionDAO.getPromotionByID(rs.getString("promotionID"));
                 String orderStatus = rs.getString("orderStatus");
 
                 return new Order(orderDate, employee, customer, promotion, orderStatus);

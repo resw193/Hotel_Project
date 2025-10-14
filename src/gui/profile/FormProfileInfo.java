@@ -114,6 +114,7 @@ public class FormProfileInfo extends JPanel {
         }
     }
 
+    // Set hình ảnh = bufferedImage
     private void displayImage(String imagePath) {
         try {
             if (imagePath == null || imagePath.trim().isEmpty()) {
