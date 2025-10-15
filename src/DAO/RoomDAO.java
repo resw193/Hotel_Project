@@ -1,10 +1,12 @@
 package DAO;
 
+import Entity.Customer;
 import Entity.Room;
 import Entity.RoomType;
 import connectDB.ConnectDB;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class RoomDAO {
@@ -141,6 +143,36 @@ public class RoomDAO {
             cs.setInt(3, quantity);
 
             return cs.executeUpdate() > 0;
+        } catch (SQLException e){
+            e.printStackTrace();
+            return false;
+        } finally {
+            connectDB.close(cs, null);
+        }
+    }
+
+    // Đặt phòng
+    public boolean datPhong(Customer customer, String roomID, String employeeID, LocalDateTime bookingDate, LocalDateTime checkInDate, LocalDateTime checkOutDate, String bookingType) {
+        Connection con = null;
+        CallableStatement cs = null;
+        String sql = "{call sp_BookRoom(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";
+
+        try {
+            con = connectDB.getConnection();
+            cs = con.prepareCall(sql);
+            cs.setString(1, customer.getFullName());
+            cs.setString(2, customer.getPhone());
+            cs.setString(3, customer.getEmail());
+            cs.setString(4, customer.getIdCard());
+            cs.setString(5, roomID);
+            cs.setString(6, employeeID);
+            cs.setString(7, bookingDate.toString());
+            cs.setString(8, checkInDate.toString());
+            cs.setString(9, checkOutDate.toString());
+            cs.setString(10, bookingType);
+
+            return cs.executeUpdate() > 0;
+
         } catch (SQLException e){
             e.printStackTrace();
             return false;
