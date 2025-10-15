@@ -34,12 +34,13 @@ public class ServiceDAO {
                 String serviceID = rs.getString("serviceID");
                 String serviceName = rs.getString("serviceName");
                 double price = rs.getDouble("price");
-                String description = rs.getString("description");
+                String serviceType = rs.getString("serviceType");
                 int quantity = rs.getInt("quantity");
                 String imgSource = rs.getString("imgSource");
 
-                dsDichVu.add(new Service(serviceID, serviceName, description, quantity, price, imgSource));
+                dsDichVu.add(new Service(serviceID, serviceName, serviceType, quantity, price, imgSource));
             }
+
             return dsDichVu;
         } catch (SQLException e){
             e.printStackTrace();
@@ -49,11 +50,45 @@ public class ServiceDAO {
         }
     }
 
+    // Lấy ra sản phẩm theo loại (Food | Drink) --> Lọc theo drink hoặc food
+    public ArrayList<Service> getAllServiceByType(String serviceType){
+        ArrayList<Service> serviceList = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        String sql = "select * from Service where serviceType = ?";
+
+        try {
+            conn = connectDB.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, serviceType);
+            rs = ps.executeQuery();
+
+            while(rs.next()){
+                String serviceID = rs.getString("serviceID");
+                String serviceName = rs.getString("serviceName");
+                double price = rs.getDouble("price");
+                int quantity = rs.getInt("quantity");
+                String imageSource = rs.getString("imgSource");
+
+                serviceList.add(new Service(serviceID, serviceName, serviceType, quantity, price, imageSource));
+            }
+
+            return serviceList;
+        } catch (SQLException e){
+            e.printStackTrace();
+            return null;
+        } finally {
+            connectDB.close(ps, rs);
+        }
+    }
+
+
     // Thêm Service (insert into) (hiển thị formAddService --> Nhập đầy đủ thông tin --> Tạo service và gọi hàm addService(Service service))
     public boolean addService(Service service) {
         Connection con = null;
         PreparedStatement ps = null;
-        String sql = "INSERT INTO Service (serviceName, price, quantity) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO Service (serviceName, price, quantity, serviceType, imgSource) VALUES (?, ?, ?, ?, ?)";
 
         try {
             con = connectDB.getConnection();
@@ -61,6 +96,8 @@ public class ServiceDAO {
             ps.setString(1, service.getServiceName());
             ps.setDouble(2, service.getPrice());
             ps.setInt(3, service.getQuantity());
+            ps.setString(4, service.getServiceType());
+            ps.setString(5, service.getImgSource());
 
             return ps.executeUpdate() > 0;
         } catch (SQLException e){
@@ -71,20 +108,62 @@ public class ServiceDAO {
         }
     }
 
-    // Cập nhật số lượng của service (update table) --> hiển thị formUpdateService --> nhập đầy đủ thông tin --> Tạo service mới và gọi hàm updateService
-    public boolean updateService(Service service) {
+    // Cập nhật số lượng của service (update table) --> hiển thị formUpdateService --> nhập đầy đủ thông tin --> Tạo service mới và gọi hàm updateService (buttonAdd)
+    public boolean updateQuantityService(int quantity, String serviceID) {
         Connection con = null;
         PreparedStatement ps = null;
-        String sql = "update Service set price = ?, quantity = ? where serviceID = ?";
+        String sql = "update Service set quantity = ? where serviceID = ?";
 
         try {
             con = connectDB.getConnection();
             ps = con.prepareStatement(sql);
-            ps.setDouble(1, service.getPrice());
-            ps.setInt(2, service.getQuantity());
+            ps.setInt(1, quantity);
+            ps.setString(2, serviceID);
+
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e){
+            e.printStackTrace();
+            return false;
+        } finally {
+            connectDB.close(ps, null);
+        }
+    }
+
+    // Cập nhật lại tên và giá của service (update table) --> hiển thị formUpdateService --> nhập đầy đủ thông tin --> Tạo service mới và gọi hàm updateService
+    public boolean updateInformationService(Service service) {
+        Connection con = null;
+        PreparedStatement ps = null;
+        String sql = "update Service set serviceName = ?, price = ? where serviceID = ?";
+
+        try {
+            con = connectDB.getConnection();
+            ps = con.prepareStatement(sql);
+            ps.setString(1, service.getServiceName());
+            ps.setDouble(2, service.getPrice());
             ps.setString(3, service.getServiceID());
 
             return ps.executeUpdate() > 0;
+        } catch (SQLException e){
+            e.printStackTrace();
+            return false;
+        } finally {
+            connectDB.close(ps, null);
+        }
+    }
+
+    // Xóa service theo ID
+    public boolean removeServiceByID(String serviceID){
+        Connection conn = null;
+        PreparedStatement ps = null;
+        String sql = "delete from Service where serviceID = ?";
+
+        try {
+            conn = connectDB.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, serviceID);
+
+            int rowAffected = ps.executeUpdate();
+            return rowAffected > 0;
         } catch (SQLException e){
             e.printStackTrace();
             return false;

@@ -5,7 +5,7 @@ import java.util.Objects;
 public class Service {
     private String serviceID;
     private String serviceName;
-    private String description;
+    private String serviceType;
     private int quantity;
     private double price;
     private String imgSource;
@@ -14,16 +14,24 @@ public class Service {
         
     }
 
-    public Service(String serviceID, String serviceName, String description,
+    public Service(String serviceID, String serviceName, String serviceType,
                    int quantity, double price, String imgSource) {
         setServiceID(serviceID); 
         setServiceName(serviceName);
         setPrice(price);
-        setDescription(description);
+        setServiceType(serviceType);
         this.quantity = quantity;
         this.imgSource = imgSource;
     }
-    
+
+    public Service(String serviceName, String serviceType, int quantity, double price, String imgSource) {
+        this.serviceName = serviceName;
+        this.serviceType = serviceType;
+        this.quantity = quantity;
+        this.price = price;
+        this.imgSource = imgSource;
+    }
+
     public String getServiceID() {
         return serviceID;
     }
@@ -44,15 +52,12 @@ public class Service {
         this.serviceName = serviceName.trim();
     }
 
-    public String getDescription() {
-        return description;
+    public String getServiceType() {
+        return serviceType;
     }
 
-    public void setDescription(String description) {
-        if (description == null || description.trim().length() < 15) {
-            throw new IllegalArgumentException("MÃ´ táº£ dá»‹ch vá»¥ pháº£i cÃ³ Ã­t nháº¥t 15 kÃ½ tá»±.");
-        }
-        this.description = description.trim();
+    public void setServiceType(String serviceType) {
+        this.serviceType = serviceType.trim();
     }
 
     public int getQuantity() {
@@ -100,14 +105,14 @@ public class Service {
     }
 
     public Object[] getObjects() {
-        return new Object[] {serviceID, serviceName, description, quantity, price, imgSource};
+        return new Object[] {serviceID, serviceName, serviceType, quantity, price, imgSource};
     }
 
     @Override
     public String toString() {
         return "Service [serviceID=" + serviceID 
                 + ", serviceName=" + serviceName 
-                + ", description=" + description
+                + ", description=" + serviceType
                 + ", quantity=" + quantity 
                 + ", price=" + price 
                 + ", imgSource=" + imgSource + "]";
