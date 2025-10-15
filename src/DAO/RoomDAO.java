@@ -52,6 +52,43 @@ public class RoomDAO {
         }
     }
 
+    // Lấy ra danh sách phòng theo loại phòng (Đơn | Đôi) --> Filter phòng theo loại
+    public ArrayList<Room> getAllRoomByTypeName(String typeName){
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        String sql = "select * \n" +
+                "from Room r\n" +
+                "JOIN RoomType rt \n" +
+                "ON r.roomTypeID = rt.roomTypeID \n" +
+                "where rt.typeName = ?";
+        ArrayList<Room> dsPhong = new ArrayList<>();
+
+        try {
+            conn = connectDB.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, typeName);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                String roomID = rs.getString("roomID");
+                String description = rs.getString("description");
+                boolean isAvailable = rs.getBoolean("isAvailable");
+                RoomType roomType = roomTypeDAO.getRoomTypeByID(rs.getString("roomTypeID"));
+                String imgRoomSource = rs.getString("imgRoomSource");
+
+                dsPhong.add(new Room(roomID, description, isAvailable, roomType, imgRoomSource));
+            }
+
+            return dsPhong;
+        } catch (SQLException e){
+            e.printStackTrace();
+            return null;
+        } finally {
+            connectDB.close(ps, rs);
+        }
+    }
+
     // Lấy ra Room theo roomID
     public Room getRoomByID(String roomID){
         Connection conn = null;
