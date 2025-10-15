@@ -16,9 +16,9 @@ public class DashboardDAO {
         return db.connect();
     }
 
-    /* ================= KPIs ================= */
+    // KPIs
     public int totalRooms() {
-        final String sql = "SELECT COUNT(*) FROM Room";
+        String sql = "SELECT COUNT(*) FROM Room";
         try (PreparedStatement ps = con().prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             return rs.next() ? rs.getInt(1) : 0;
@@ -28,9 +28,9 @@ public class DashboardDAO {
         }
     }
 
-    // Phòng trống
+    // Phòng đã đc đặt
     public int occupiedNow() {
-        final String sql = "SELECT COUNT(*) FROM Room WHERE isAvailable = 0";
+        String sql = "SELECT COUNT(*) FROM Room WHERE isAvailable = 0";
         try (PreparedStatement ps = con().prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             return rs.next() ? rs.getInt(1) : 0;
@@ -40,6 +40,7 @@ public class DashboardDAO {
         }
     }
 
+    // Lấy ra số phòng trống
     public int freeNow() {
         int total = totalRooms();
         int occ = occupiedNow();
@@ -55,9 +56,11 @@ public class DashboardDAO {
     // Doanh thu theo tháng hiện tại
     public BigDecimal revenueThisMonth() {
         final String sql =
-                "SELECT COALESCE(SUM(CAST(total AS DECIMAL(19,2))),0) " +
-                        "FROM [Order] " +
-                        "WHERE YEAR(orderDate)=YEAR(GETDATE()) AND MONTH(orderDate)=MONTH(GETDATE())";
+                "SELECT ISNULL(SUM(total),0)\n" +
+                        "FROM [Order]\n" +
+                        "WHERE orderStatus = N'Thanh toán'\n" +
+                        "  AND YEAR(orderDate) = YEAR(GETDATE())\n" +
+                        "  AND MONTH(orderDate) = MONTH(GETDATE())";
         try (PreparedStatement ps = con().prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             return rs.next() ? rs.getBigDecimal(1) : BigDecimal.ZERO;
@@ -67,11 +70,12 @@ public class DashboardDAO {
         }
     }
 
-    // Số đơn đặt trong hôm nay
+    // Số phòng đặt trong hôm nay
     public int bookingsToday() {
         final String sql =
-                "SELECT COUNT(*) FROM [Order] " +
-                        "WHERE CAST(orderDate AS DATE) = CAST(GETDATE() AS DATE)";
+                "SELECT COUNT(*) \n" +
+                        "FROM OrderDetailRoom \n" +
+                        "WHERE CAST(bookingDate AS DATE) = CAST(GETDATE() AS DATE)";
         try (PreparedStatement ps = con().prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             return rs.next() ? rs.getInt(1) : 0;
@@ -81,7 +85,7 @@ public class DashboardDAO {
         }
     }
 
-    /* ============== Bảng hoạt động sắp tới ============== */
+    // Bảng hoạt động sắp tới
     public List<UpcomingBooking> upcomingBookings(int daysAhead) {
         final String sql =
                 "SELECT odr.orderID, c.fullName, odr.roomID, odr.checkInDate, odr.checkOutDate, odr.status " +
