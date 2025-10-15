@@ -12,17 +12,23 @@ import java.awt.event.ActionEvent;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
+import DAO.AccountDAO;
+import DAO.EmployeeDAO;
+import Entity.Employee;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.formdev.flatlaf.util.UIScale;
 
 import gui.customer.FormCustomerManagement;
 import gui.dashboard.FormDashboard;
+import gui.dashboard.FormTrangChu;
 import gui.menu.Menu;
 import gui.menu.MenuAction;
 import gui.order.FormOrderManagement;
 import gui.profile.FormProfileInfo;
+import gui.promotion.FormPromotionManagement;
 import gui.room.FormRoomManagement;
+import gui.roomBooking.FormCancelBooking;
 import gui.roomBooking.FormRoomBookingManagement;
 import gui.service.FormServiceManagement;
 import gui.statistics.FormThongKe;
@@ -36,7 +42,10 @@ public class MainForm extends JLayeredPane {
     private void init() {
         setBorder(new EmptyBorder(5, 5, 5, 5));
         setLayout(new MainFormLayout());
-        menu = new Menu();
+
+        menu = new Menu(Application.vaiTroNhanVien);
+
+
         panelBody = new JPanel(new BorderLayout());
         initMenuArrowIcon();
         menuButton.putClientProperty(FlatClientProperties.STYLE,
@@ -67,28 +76,45 @@ public class MainForm extends JLayeredPane {
 
     private void initMenuEvent() {
         menu.addMenuEvent((int index, int subIndex, MenuAction action) -> {
-            if (index == 0) {
-                Application.showForm(new FormDashboard());
-            } else if (index == 1) {
-                Application.showForm(new FormRoomManagement());
-            } else if (index == 2) {
-                Application.showForm(new FormRoomBookingManagement());
-            } else if (index == 3) {
-                Application.showForm(new FormOrderManagement());
-            } else if (index == 4) {
-                switch (subIndex) {
-                    case 0 -> Application.showForm(new FormCustomerManagement());
-                    case 1 -> Application.showForm(new FormThongKe());
+            // Kieểm tra vai trò của nhaân viên --> Phân quyền để mở các chức năng tương ứng với vai trò đó
+            if(Application.vaiTroNhanVien.equalsIgnoreCase("Lễ tân")){
+                switch (index) {
+                    case 0 -> Application.showForm(new FormTrangChu());
+                    case 1 -> Application.showForm(new FormDashboard());
+                    case 2 -> Application.showForm(new FormRoomManagement());
+                    case 3 -> Application.showForm(new FormRoomBookingManagement());
+                    case 4 -> Application.showForm(new FormCancelBooking());
+                    case 5 -> Application.showForm(new FormOrderManagement());
+                    case 6 -> Application.showForm(new FormProfileInfo());
+                    case 7 -> {
+                        int choice = JOptionPane.showConfirmDialog(this, "Bạn có chắc muốn đăng xuất không?", "Warning", JOptionPane.YES_NO_OPTION);
+                        if (choice == JOptionPane.YES_OPTION)
+                            Application.logout();
+                    }
                     default -> action.cancel();
                 }
-            } else if (index == 5) {
-                Application.showForm(new FormServiceManagement());
-            } else if (index == 6) {
-                Application.showForm(new FormProfileInfo());
-            } else if (index == 7) {
-                int choice = JOptionPane.showConfirmDialog(this, "Bạn có chắc muốn đăng xuất không?", "Warning", JOptionPane.YES_NO_OPTION);
-                if(choice == JOptionPane.YES_OPTION){
-                    Application.logout();
+            }
+            else {
+                // Quản lý
+                if (index == 0) Application.showForm(new FormTrangChu());
+                else if (index == 1) Application.showForm(new FormDashboard());
+                else if (index == 2) Application.showForm(new FormRoomManagement());
+                else if (index == 3) Application.showForm(new FormRoomBookingManagement());
+                else if (index == 4) Application.showForm(new FormCancelBooking());
+                else if (index == 5) Application.showForm(new FormOrderManagement());
+                else if (index == 6) {
+                    switch (subIndex) {
+                        case 0 -> Application.showForm(new FormCustomerManagement());
+                        case 1 -> Application.showForm(new FormPromotionManagement());
+                        case 2 -> Application.showForm(new FormThongKe());
+                        default -> action.cancel();
+                    }
+                } else if (index == 7) Application.showForm(new FormServiceManagement());
+                else if (index == 8) Application.showForm(new FormProfileInfo());
+                else if (index == 9) {
+                    int choice = JOptionPane.showConfirmDialog(this, "Bạn có chắc muốn đăng xuất không?", "Warning", JOptionPane.YES_NO_OPTION);
+                    if (choice == JOptionPane.YES_OPTION)
+                        Application.logout();
                 }
             }
         });

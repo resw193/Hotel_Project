@@ -1,24 +1,11 @@
 package gui.menu;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Insets;
-import java.awt.LayoutManager;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.border.AbstractBorder;
+import javax.swing.*;
 
 import com.formdev.flatlaf.FlatClientProperties;
-import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.formdev.flatlaf.ui.FlatUIUtils;
 import com.formdev.flatlaf.util.UIScale;
 
@@ -27,14 +14,31 @@ import gui.menu.mode.ToolBarAccentColor;
 
 public class Menu extends JPanel {
 
-	// THÊM "Trang chủ" ở đầu, giữ "Đăng xuất" cuối
-	private final String menuItems[][] = {
+	// Menu được gán theo vai trò của nhân viên
+	private String[][] items;
+
+	// menu đầy đủ (dành cho Quản lý)
+	private final String[][] FULL_MENU = {
 			{"Trang chủ"},
-			{"Quản lý phòng"},
-			{"Quản lý đặt phòng"},
-			{"Quản lý hóa đơn"},
-			{"Quản lý khách hàng", "Thông tin khách hàng", "Thống kê"},
-			{"Quản lý dịch vụ"},
+			{"Dashboard"},
+			{"Phòng"},
+			{"Đặt phòng"},
+			{"Hủy đặt phòng"},
+			{"Hóa đơn"},
+			{"Khách hàng", "Thông tin khách hàng", "Khuyến mãi", "Thống kê"},
+			{"Dịch vụ"},
+			{"Thông tin cá nhân"},
+			{"Đăng xuất"}
+	};
+
+	// menu rút gọn (dành cho Lễ tân)
+	private final String[][] RECEPTION_MENU = {
+			{"Trang chủ"},
+			{"Dashboard"},
+			{"Phòng"},
+			{"Đặt phòng"},
+			{"Hủy đặt phòng"},
+			{"Hóa đơn"},
 			{"Thông tin cá nhân"},
 			{"Đăng xuất"}
 	};
@@ -56,12 +60,20 @@ public class Menu extends JPanel {
 	private LightDarkMode lightDarkMode;
 	private ToolBarAccentColor toolBarAccentColor;
 
-	public Menu() { init(); }
+	public Menu() { this(null); }
+
+	public Menu(String role) {
+		if (role != null && role.equalsIgnoreCase("Lễ tân"))
+			items = RECEPTION_MENU;
+		else
+			items = FULL_MENU;
+		init();
+	}
 
 	private void init() {
 		setLayout(new MenuLayout());
 		setBackground(Color.WHITE);
-		setBorder(new AbstractBorder() {});
+		setBorder(new javax.swing.border.AbstractBorder() {});
 
 		putClientProperty(FlatClientProperties.STYLE, "arc:12;background:#0B1F33");
 
@@ -97,14 +109,18 @@ public class Menu extends JPanel {
 
 	private void createMenu() {
 		int index = 0;
-		for (int i = 0; i < menuItems.length; i++) {
-			String menuName = menuItems[i][0];
-			MenuItem menuItem = new MenuItem(this, menuItems[i], index++, events);
+		for (String[] def : items) {
+			MenuItem menuItem = new MenuItem(this, def, index++, events);
 			panelMenu.add(menuItem);
 		}
 	}
 
 	public boolean isMenuFull() { return menuFull; }
+	public int getMenuMaxWidth() { return menuMaxWidth; }
+	public int getMenuMinWidth() { return menuMinWidth; }
+	public boolean isHideMenuTitleOnMinimum() { return hideMenuTitleOnMinimum; }
+	public int getMenuTitleLeftInset() { return menuTitleLeftInset; }
+	public int getMenuTitleVgap() { return menuTitleVgap; }
 
 	public void setMenuFull(boolean menuFull) {
 		this.menuFull = menuFull;
@@ -115,9 +131,9 @@ public class Menu extends JPanel {
 			header.setText("");
 			header.setHorizontalAlignment(JLabel.CENTER);
 		}
-		for (Component com : panelMenu.getComponents()) {
+		for (Component com : panelMenu.getComponents())
 			if (com instanceof MenuItem) ((MenuItem) com).setFull(menuFull);
-		}
+
 		lightDarkMode.setMenuFull(menuFull);
 		toolBarAccentColor.setMenuFull(menuFull);
 	}
@@ -150,21 +166,11 @@ public class Menu extends JPanel {
 		revalidate();
 	}
 
-	public boolean isHideMenuTitleOnMinimum() { return hideMenuTitleOnMinimum; }
-	public int getMenuTitleLeftInset() { return menuTitleLeftInset; }
-	public int getMenuTitleVgap() { return menuTitleVgap; }
-	public int getMenuMaxWidth() { return menuMaxWidth; }
-	public int getMenuMinWidth() { return menuMinWidth; }
-
 	private class MenuLayout implements LayoutManager {
 		@Override public void addLayoutComponent(String name, Component comp) {}
 		@Override public void removeLayoutComponent(Component comp) {}
-		@Override public Dimension preferredLayoutSize(Container parent) {
-			synchronized (parent.getTreeLock()) { return new Dimension(5,5); }
-		}
-		@Override public Dimension minimumLayoutSize(Container parent) {
-			synchronized (parent.getTreeLock()) { return new Dimension(0,0); }
-		}
+		@Override public Dimension preferredLayoutSize(Container parent) { synchronized (parent.getTreeLock()) { return new Dimension(5,5); } }
+		@Override public Dimension minimumLayoutSize(Container parent)   { synchronized (parent.getTreeLock()) { return new Dimension(0,0); } }
 		@Override public void layoutContainer(Container parent) {
 			synchronized (parent.getTreeLock()) {
 				Insets insets = parent.getInsets();

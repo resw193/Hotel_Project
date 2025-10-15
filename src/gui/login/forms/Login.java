@@ -88,7 +88,7 @@ public class Login extends JPanel {
         }
 
         if (accountDAO.checkAuthAccount(user, pass)) {
-            JOptionPane.showMessageDialog(null, "Login successful");
+            //JOptionPane.showMessageDialog(null, "Login successful");
             Application.login(user, pass);
         } else {
             JOptionPane.showMessageDialog(null, "Invalid username or password", "Error", JOptionPane.ERROR_MESSAGE);

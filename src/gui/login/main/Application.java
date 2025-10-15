@@ -7,26 +7,29 @@ import java.awt.Font;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+import javax.swing.*;
 
+import DAO.AccountDAO;
+import com.beust.ah.A;
 import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.extras.FlatAnimatedLafChange;
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
 import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 
+import gui.dashboard.FormDashboard;
 import gui.login.forms.Home;
 import raven.toast.Notifications;
 
 public class Application extends JFrame {
     private static Application app;
-    private final MainForm mainForm;
+    private MainForm mainForm;
     private final Home home;
+    private static AccountDAO accountDAO = new AccountDAO();
 
     // Storage
     public static String username;
     public static String password;
+    public static String vaiTroNhanVien;
 
     public Application() {
         initComponents();
@@ -34,7 +37,6 @@ public class Application extends JFrame {
 //        setResizable(true);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setLocationRelativeTo(null);
-        mainForm = new MainForm();
         home = new Home();
         home.setVisible(true);
         setContentPane(home);
@@ -69,16 +71,21 @@ public class Application extends JFrame {
         // Khi đăng nhập ta lưu lại username, password của Employee
         username = user;
         password = pass;
-
+        vaiTroNhanVien = accountDAO.getAccountByUsername(Application.username).getEmployee().getEmployeeType().getTypeName();
+        JOptionPane.showMessageDialog(null, "Bạn đã đăng nhập thành công với vai trò là " + vaiTroNhanVien);
         FlatAnimatedLafChange.showSnapshot();
+
+        app.mainForm = new MainForm();
         app.setContentPane(app.mainForm);
         app.mainForm.applyComponentOrientation(app.getComponentOrientation());
-        setSelectedMenu(0, 0);
+
+        // Để ngay tab Dashboard ngay khi vừa đăng nhập vào (cho cả lễ tân và quản lý)
+        setSelectedMenu(1, 0);
         app.mainForm.hideMenu();
         SwingUtilities.updateComponentTreeUI(app.mainForm);
 
-        // Hiển thị dashboard trên trang chủ
-        showForm(new gui.dashboard.FormDashboard());
+        // Khi đăng nhâập sẽ hiển thị FormDashboard
+        showForm(new FormDashboard());
         FlatAnimatedLafChange.hideSnapshotWithAnimation();
     }
 
