@@ -107,7 +107,7 @@ public class FormServiceManagement extends JPanel {
             @Override public Color filter(Color c) { return TEXT_MUTED; }
         };
 
-        for (Service s : services) {
+        for (Service service : services) {
             JPanel card = new JPanel(new MigLayout("wrap 6, insets 14, gapy 6", "[grow]", "[]"));
             card.setBackground(CARD_BG);
             card.putClientProperty(FlatClientProperties.STYLE, "arc:16; borderColor:#153C5B");
@@ -115,7 +115,7 @@ public class FormServiceManagement extends JPanel {
             JLabel imgService = new JLabel("", SwingConstants.CENTER);
             imgService.setPreferredSize(new Dimension(140, 180));
 
-            String path = s.getImgSource();
+            String path = service.getImgSource();
             if (path != null && !path.isBlank() && new File(path).exists()) {
                 Image img = new ImageIcon(path).getImage();
                 imgService.setIcon(new ImageIcon(img.getScaledInstance(120, 120, Image.SCALE_SMOOTH)));
@@ -125,15 +125,15 @@ public class FormServiceManagement extends JPanel {
                 imgService.setIcon(ph);
             }
 
-            JLabel name = new JLabel(s.getServiceName(), SwingConstants.CENTER);
+            JLabel name = new JLabel(service.getServiceName(), SwingConstants.CENTER);
             name.setForeground(TEXT_PRIMARY);
             name.setFont(name.getFont().deriveFont(Font.BOLD, 14f));
             name.putClientProperty(FlatClientProperties.STYLE, "border:6,0,6,0");
 
-            JLabel qty = new JLabel("Quantity: " + s.getQuantity());
+            JLabel qty = new JLabel("Quantity: " + service.getQuantity());
             qty.setForeground(TEXT_MUTED);
 
-            JLabel price = new JLabel(String.format("Price: %,.2f VND", s.getPrice()), SwingConstants.RIGHT);
+            JLabel price = new JLabel(String.format("Price: %,.2f VND", service.getPrice()), SwingConstants.RIGHT);
             price.setForeground(TEXT_MUTED);
 
             // FlatSVGIcon cho các button
@@ -159,7 +159,7 @@ public class FormServiceManagement extends JPanel {
             btnDelete.addActionListener(e -> {
                 int opt = JOptionPane.showConfirmDialog(this, "Bạn có chắc muốn xóa dịch vụ này không?", "Confirm", JOptionPane.YES_NO_OPTION);
                 if (opt == JOptionPane.YES_OPTION) {
-                    if (serviceDAO.removeServiceByID(s.getServiceID())) {
+                    if (serviceDAO.removeServiceByID(service.getServiceID())) {
                         Notifications.getInstance().show(Notifications.Type.INFO, Notifications.Location.BOTTOM_LEFT, "Deleted");
                         reload();
                     } else {
@@ -169,7 +169,7 @@ public class FormServiceManagement extends JPanel {
             });
 
             btnUpdate.addActionListener(e -> {
-                FormUpdateService formUpdateService = new FormUpdateService(FormServiceManagement.this, s);
+                FormUpdateService formUpdateService = new FormUpdateService(FormServiceManagement.this, service);
                 formUpdateService.setModal(true);
                 formUpdateService.setLocationRelativeTo(this);
                 formUpdateService.setVisible(true);
@@ -177,7 +177,7 @@ public class FormServiceManagement extends JPanel {
             });
 
             btnAddQty.addActionListener(e -> {
-                FormUpdateQuantityService formUpdateQuantityService = new FormUpdateQuantityService(FormServiceManagement.this, s);
+                FormUpdateQuantityService formUpdateQuantityService = new FormUpdateQuantityService(FormServiceManagement.this, service);
                 formUpdateQuantityService.setModal(true);
                 formUpdateQuantityService.setLocationRelativeTo(this);
                 formUpdateQuantityService.setVisible(true);
