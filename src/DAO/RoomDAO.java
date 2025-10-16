@@ -89,6 +89,42 @@ public class RoomDAO {
         }
     }
 
+    // Lấy ra danh sách phòng đã được đặt (isAvailable = 0) và status = 'Đặt' --> thuc hien check-in   hoặc  status = 'Check-in' --> Thực hiện check-out
+    public ArrayList<Room> getAllRoomByStatus(String status){
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        String sql = "select r.roomID, r.description, r.isAvailable, r.roomTypeID, r.imgRoomSource, ordr.status\n" +
+                "from Room r\n" +
+                "JOIN OrderDetailRoom ordr\n" +
+                "ON r.roomID = ordr.roomID and ordr.status = ?";
+        ArrayList<Room> dsPhong = new ArrayList<>();
+
+        try {
+            conn = connectDB.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, status);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                String roomID = rs.getString("roomID");
+                String description = rs.getString("description");
+                boolean isAvailable = rs.getBoolean("isAvailable");
+                RoomType roomType = roomTypeDAO.getRoomTypeByID(rs.getString("roomTypeID"));
+                String imgRoomSource = rs.getString("imgRoomSource");
+
+                dsPhong.add(new Room(roomID, description, isAvailable, roomType, imgRoomSource));
+            }
+
+            return dsPhong;
+        } catch (SQLException e){
+            e.printStackTrace();
+            return null;
+        } finally {
+            connectDB.close(ps, rs);
+        }
+    }
+
     // Lấy ra Room theo roomID
     public Room getRoomByID(String roomID){
         Connection conn = null;
@@ -124,15 +160,16 @@ public class RoomDAO {
     public boolean addRoom(Room room){
         Connection con = null;
         PreparedStatement ps = null;
-        String sql = "INSERT INTO Room (description, roomTypeID, imgRoomSource)\n" +
-                "VALUES (?, ?, ?)";
+        String sql = "INSERT INTO Room (description, isAvailable, roomTypeID, imgRoomSource)\n" +
+                "VALUES (?, ?, ?, ?)";
 
         try {
             con = connectDB.getConnection();
             ps = con.prepareStatement(sql);
             ps.setString(1, room.getDescription());
-            ps.setString(2, room.getRoomType().getRoomTypeID());
-            ps.setString(3, room.getImgRoomSource());
+            ps.setBoolean(2, room.isAvailable());
+            ps.setString(3, room.getRoomType().getRoomTypeID());
+            ps.setString(4, room.getImgRoomSource());
 
             return ps.executeUpdate() > 0;
         } catch (SQLException e){
@@ -166,7 +203,7 @@ public class RoomDAO {
         }
     }
 
-    // Cập nhật dịch vụ cho phòng (sp_AddServiceToRoom(@roomID, @serviceName, @quantity))
+    // Cập nhật dịch vụ cho phòng (sp_AddServiceToRoom(@roomID, @serviceName, @quantity)) (chỉ khi phòng đã check-in) --> Tạo button filter theo (All/Check-in) để thêm cho dễ
     public boolean capNhatDichVuChoPhong(String roomID, String serviceName, int quantity){
         Connection con = null;
         CallableStatement cs = null;
@@ -188,6 +225,7 @@ public class RoomDAO {
         }
     }
 
+    // Quản lý đặt phòng
     // Đặt phòng
     public boolean datPhong(Customer customer, String roomID, String employeeID, LocalDateTime bookingDate, LocalDateTime checkInDate, LocalDateTime checkOutDate, String bookingType) {
         Connection con = null;

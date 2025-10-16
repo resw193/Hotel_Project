@@ -29,12 +29,15 @@ public class Room {
     }
 
     // Add Room
-    public Room(String description, RoomType roomType, String imgRoomSource) {
+    public Room(String description, boolean isAvailable, RoomType roomType, String imgRoomSource) {
         this.description = description;
+        this.isAvailable = isAvailable;
         this.roomType = roomType;
         this.imgRoomSource = imgRoomSource;
     }
 
+
+    // -------------------------------------------------------------------------------------------------------------------
     public String getRoomID() {
         return roomID;
     }
@@ -50,7 +53,7 @@ public class Room {
 
     public void setDescription(String description) {
         if (description == null || description.trim().length() < 15) {
-            throw new IllegalArgumentException("MÃ´ táº£ phÃ²ng pháº£i cÃ³ Ã­t nháº¥t 15 kÃ½ tá»±.");
+            throw new IllegalArgumentException("thông tin mô tả của phòng phải từ 15 kí tự trở lên");
         }
         this.description = description.trim();
     }
@@ -69,7 +72,7 @@ public class Room {
 
     public void setRoomType(RoomType roomType) {
         if (roomType == null) {
-            throw new IllegalArgumentException("Loáº¡i phÃ²ng khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.");
+            throw new IllegalArgumentException("Loại phòng không được rỗng");
         }
         this.roomType = roomType;
     }
