@@ -47,8 +47,8 @@ public class FormAddService extends JDialog {
         lblPreview.setPreferredSize(new Dimension(140,140));
         lblPreview.setHorizontalAlignment(SwingConstants.CENTER);
         lblPreview.setBorder(BorderFactory.createDashedBorder(new Color(0x274A6B)));
-        JButton btnChooseImage = new JButton("Choose image");
-        p.add(new JLabel("Image"), "gapbottom 6");
+        JButton btnChooseImage = new JButton("Chọn ảnh");
+        p.add(new JLabel("Hình ảnh"), "gapbottom 6");
         p.add(lblPreview, "wrap, h 140!");
         p.add(new JLabel(""));
         p.add(btnChooseImage, "wrap");
@@ -58,9 +58,9 @@ public class FormAddService extends JDialog {
         txtPrice = new JTextField();
         txtQty = new JTextField();
 
-        p.add(new JLabel("Name"));   p.add(txtName);
-        p.add(new JLabel("Type"));   p.add(cboType);
-        p.add(new JLabel("Price"));  p.add(txtPrice);
+        p.add(new JLabel("Tên dịch vụ"));   p.add(txtName);
+        p.add(new JLabel("Loại dịch vụ"));   p.add(cboType);
+        p.add(new JLabel("Giá"));  p.add(txtPrice);
 
         err = new JLabel(" ");
         err.setForeground(new Color(0xD64545));
@@ -104,7 +104,7 @@ public class FormAddService extends JDialog {
             if (serviceDAO.addService(s)) {
                 Notifications.getInstance().show(Notifications.Type.INFO, Notifications.Location.BOTTOM_LEFT, "Added");
                 dispose();
-                parent.reload();
+                parent.reloadData();
             } else {
                 err.setText("Failed to add service.");
             }

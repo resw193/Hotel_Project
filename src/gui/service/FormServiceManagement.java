@@ -71,19 +71,19 @@ public class FormServiceManagement extends JPanel {
         add(scroll, "grow");
 
         // Events
-        cboFilter.addActionListener(e -> reload());
+        cboFilter.addActionListener(e -> reloadData());
         btnAddNew.addActionListener(e -> {
             FormAddService FormAddService = new FormAddService(FormServiceManagement.this);
             FormAddService.setModal(true);
             FormAddService.setLocationRelativeTo(this);
             FormAddService.setVisible(true);
-            reload();
+            reloadData();
         });
 
-        reload();
+        reloadData();
     }
 
-    public void reload() {
+    public void reloadData() {
         String selected = String.valueOf(cboFilter.getSelectedItem());
 
         List<Service> data = switch(selected)
@@ -161,7 +161,7 @@ public class FormServiceManagement extends JPanel {
                 if (opt == JOptionPane.YES_OPTION) {
                     if (serviceDAO.removeServiceByID(service.getServiceID())) {
                         Notifications.getInstance().show(Notifications.Type.INFO, Notifications.Location.BOTTOM_LEFT, "Deleted");
-                        reload();
+                        reloadData();
                     } else {
                         JOptionPane.showMessageDialog(this, "Cannot delete service", "Failed", JOptionPane.ERROR_MESSAGE);
                     }
@@ -173,7 +173,7 @@ public class FormServiceManagement extends JPanel {
                 formUpdateService.setModal(true);
                 formUpdateService.setLocationRelativeTo(this);
                 formUpdateService.setVisible(true);
-                reload();
+                reloadData();
             });
 
             btnAddQty.addActionListener(e -> {
@@ -181,7 +181,7 @@ public class FormServiceManagement extends JPanel {
                 formUpdateQuantityService.setModal(true);
                 formUpdateQuantityService.setLocationRelativeTo(this);
                 formUpdateQuantityService.setVisible(true);
-                reload();
+                reloadData();
             });
 
             grid.add(card, "grow");

@@ -34,7 +34,7 @@ public class FormUpdateService extends JDialog {
         p.setBorder(new EmptyBorder(14,16,14,16));
         p.setLayout(new MigLayout("wrap 2, fillx, insets 0, gap 10", "[120::,right]16[fill]"));
 
-        JLabel title = new JLabel("Update Information");
+        JLabel title = new JLabel("Cập nhật thông tin dịch vụ");
         title.setFont(title.getFont().deriveFont(Font.BOLD, 18f));
         p.add(title, "span, al center, gapbottom 8");
 
@@ -70,7 +70,7 @@ public class FormUpdateService extends JDialog {
             if (serviceDAO.updateInformationService(s)) {
                 Notifications.getInstance().show(Notifications.Type.INFO, Notifications.Location.BOTTOM_LEFT, "Updated");
                 dispose();
-                parent.reload();
+                parent.reloadData();
             } else {
                 err.setText("Failed to update.");
             }

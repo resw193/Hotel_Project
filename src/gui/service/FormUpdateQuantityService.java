@@ -34,12 +34,12 @@ public class FormUpdateQuantityService extends JDialog {
         p.setBorder(new EmptyBorder(14,16,14,16));
         p.setLayout(new MigLayout("wrap 2, fillx, insets 0, gap 10", "[120::,right]16[fill]"));
 
-        JLabel title = new JLabel("Add Quantity for: " + currentService.getServiceName());
+        JLabel title = new JLabel("Thêm số lượng cho: " + currentService.getServiceName());
         title.setFont(title.getFont().deriveFont(Font.BOLD, 16f));
         p.add(title, "span, al center, gapbottom 8");
 
         txtAdd = new JTextField();
-        p.add(new JLabel("Thêm số lượng")); p.add(txtAdd);
+        p.add(new JLabel("Số lượng")); p.add(txtAdd);
 
         err = new JLabel(" ");
         err.setForeground(new Color(0xD64545));
@@ -63,7 +63,7 @@ public class FormUpdateQuantityService extends JDialog {
             if (serviceDAO.updateQuantityService(newQty, currentService.getServiceID())) {
                 Notifications.getInstance().show(Notifications.Type.INFO, Notifications.Location.BOTTOM_LEFT, "Quantity updated");
                 dispose();
-                parent.reload();
+                parent.reloadData();
             } else {
                 err.setText("Failed to update quantity.");
             }

@@ -49,7 +49,7 @@ public class FormProfileInfo extends JPanel {
                 "arc:18;background:#0F2A47;foreground:#EAF2FF;");
 
         // Title
-        lblTitle = new JLabel("Personal Information");
+        lblTitle = new JLabel("Thông tin cá nhân");
         lblTitle.putClientProperty(FlatClientProperties.STYLE, "font:bold +6;foreground:#F2C94C");
 
         // Avatar (center top)
@@ -73,11 +73,11 @@ public class FormProfileInfo extends JPanel {
 
         // Rows
         panel.add(label("EmployeeID:")); panel.add(txtEmployeeID, "growx");
-        panel.add(label("FullName:"));   panel.add(txtFullName,   "growx");
-        panel.add(label("Gender:"));     panel.add(txtGender,     "growx");
-        panel.add(label("Phone:"));      panel.add(txtPhone,      "growx");
+        panel.add(label("Họ tên:"));   panel.add(txtFullName,   "growx");
+        panel.add(label("Giới tính:"));     panel.add(txtGender,     "growx");
+        panel.add(label("Số điện thoại:"));      panel.add(txtPhone,      "growx");
         panel.add(label("Email:"));      panel.add(txtEmail,      "growx");
-        panel.add(label("TypeName:"));   panel.add(txtTypeName,   "growx");
+        panel.add(label("Loại nhân viên:"));   panel.add(txtTypeName,   "growx");
     }
 
     private JLabel label(String text) {
@@ -95,7 +95,9 @@ public class FormProfileInfo extends JPanel {
         return t;
     }
 
-    private String s(String v) { return v == null ? "" : v; }
+    private String s(String v) {
+        return v == null ? "" : v;
+    }
 
     private void loadEmployeeAndBind() {
         try {
