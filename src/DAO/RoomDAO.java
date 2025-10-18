@@ -351,4 +351,57 @@ public class RoomDAO {
         }
     }
 
+    // Gia hạn phòng --> Chuột phải vào phòng sẽ có MenuOption Gia hạn phòng (Chỉ áp dụng đối với phòng đã check-in) sẽ ra FormExtendRoom gồm 3 dòng
+    // RoomID | Thời gian check-out cũ | Thời gian check-out mới
+    public boolean giaHanPhong(String roomID, LocalDateTime newCheckOutDate){
+        Connection con = null;
+        CallableStatement cs = null;
+        String sql = "{call sp_GiaHanPhong(?, ?)}";
+
+        try {
+            con = connectDB.getConnection();
+            cs = con.prepareCall(sql);
+            cs.setString(1, roomID);
+            cs.setTimestamp(2, Timestamp.valueOf(newCheckOutDate));
+
+            return cs.execute();
+        } catch (SQLException e){
+            e.printStackTrace();
+            return false;
+        } finally {
+            connectDB.close(cs, null);
+        }
+    }
+
+    public LocalDateTime[] getActiveStayTimes(String roomID){
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        LocalDateTime checkIn = null, checkOut = null;
+        String sql = "select TOP 1 checkInDate, checkOutDate " +
+                "from OrderDetailRoom where roomID = ? and status = N'Check-in' " +
+                "order by orderDetailRoomID desc";
+        try {
+            con = connectDB.getConnection();
+            ps = con.prepareStatement(sql);
+            ps.setString(1, roomID);
+            rs = ps.executeQuery();
+
+            if (rs.next()){
+                Timestamp checkInDate = rs.getTimestamp("checkInDate");
+                Timestamp checkOutDate = rs.getTimestamp("checkOutDate");
+                if (checkInDate != null) checkIn  = checkInDate.toLocalDateTime();
+                if (checkOutDate != null) checkOut = checkOutDate.toLocalDateTime();
+            }
+
+            return new LocalDateTime[]{
+                    checkIn, checkOut
+            };
+        } catch (SQLException e){
+            e.printStackTrace();
+            return new LocalDateTime[]{null, null};
+        } finally {
+            connectDB.close(ps, rs);
+        }
+    }
 }
