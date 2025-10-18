@@ -52,7 +52,7 @@ public class RoomDAO {
         }
     }
 
-    // Lấy ra danh sách phòng theo loại phòng (Đơn | Đôi) --> Filter phòng theo loại
+    // Lấy ra danh sách phòng theo loại phòng (Phòng đơn | Phòng đôi) --> Filter phòng theo loại
     public ArrayList<Room> getAllRoomByTypeName(String typeName){
         Connection conn = null;
         PreparedStatement ps = null;
@@ -104,6 +104,39 @@ public class RoomDAO {
             conn = connectDB.getConnection();
             ps = conn.prepareStatement(sql);
             ps.setString(1, status);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                String roomID = rs.getString("roomID");
+                String description = rs.getString("description");
+                boolean isAvailable = rs.getBoolean("isAvailable");
+                RoomType roomType = roomTypeDAO.getRoomTypeByID(rs.getString("roomTypeID"));
+                String imgRoomSource = rs.getString("imgRoomSource");
+
+                dsPhong.add(new Room(roomID, description, isAvailable, roomType, imgRoomSource));
+            }
+
+            return dsPhong;
+        } catch (SQLException e){
+            e.printStackTrace();
+            return null;
+        } finally {
+            connectDB.close(ps, rs);
+        }
+    }
+
+    // Lấy ra toàn bộ phòng trống (isAvailable = 1)
+    public ArrayList<Room> getAllRoomOccupancy(int status){
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        String sql = "select * from Room where isAvailable = ?";
+        ArrayList<Room> dsPhong = new ArrayList<>();
+
+        try {
+            conn = connectDB.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, status);
             rs = ps.executeQuery();
 
             while (rs.next()) {
@@ -225,7 +258,7 @@ public class RoomDAO {
         }
     }
 
-    // Quản lý đặt phòng
+    // Quản lý đặt phòng --> Hieển thị dạng card (giông dịch vụ) và có các nút filter theo loại phòng (Phòng đơn | Phòng đôi), filter theo trạng thái ('Trống', 'Đặt', 'Check-in')
     // Đặt phòng
     public boolean datPhong(Customer customer, String roomID, String employeeID, LocalDateTime bookingDate, LocalDateTime checkInDate, LocalDateTime checkOutDate, String bookingType) {
         Connection con = null;
@@ -256,7 +289,8 @@ public class RoomDAO {
         }
     }
 
-    // Hủy đặt phòng (call sp_CancelBooking(?)) (chỉ hủy đặt phòng khi status của phòng đó = 'Đặt')
+    // Hủy đặt phòng (call sp_CancelBooking(?)) (chỉ hủy đặt phòng khi status của phòng đó = 'Đặt' tức là chưa check-in) --> giao diện hủy đặt phòng sẽ hieển thị các phòng
+    // có trạng thái = 'Đặt', và customer yêu cầu hủy đặt phòng chỉ cần tìm theo mã phòng
     public boolean huyDatPhong(String roomID){
         Connection con = null;
         CallableStatement cs = null;
@@ -276,7 +310,7 @@ public class RoomDAO {
         }
     }
 
-    // Check-in ( {call sp_CheckIn(?)} )
+    // Check-in ( {call sp_CheckIn(?)} ) --> chuột phải vào phòng --> click check-in (chỉ sử dụng đc khi phòng có status = 'Đặt')
     public boolean checkIn(String roomID){
         Connection con = null;
         CallableStatement cs = null;
@@ -296,7 +330,7 @@ public class RoomDAO {
         }
     }
 
-    // Check-out ( {call sp_CheckOut(?)} )
+    // Check-out ( {call sp_CheckOut(?)} ) --> chuột phải vào phòng --> click check-out (chỉ sử dụng đc khi phòng có status = 'Check-in')
     public boolean checkOut(String roomID){
         Connection con = null;
         CallableStatement cs = null;
