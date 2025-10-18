@@ -95,7 +95,7 @@ public class FormRoomManagement extends JPanel {
         // cài dat su kien double-click vào phòng --> hiển thị thông tin phòng để xem
         tableRoom.addMouseListener(new MouseAdapter() {
             @Override public void mousePressed(MouseEvent e) {
-                if (e.getClickCount() == 2 && tableRoom.getSelectedRow() != -1) {
+                if (tableRoom.getSelectedRow() != -1 && e.getClickCount() == 2)  {
                     String roomID = (String) roomTableModel.getValueAt(tableRoom.getSelectedRow(), 0);
                     Room room = roomDAO.getRoomByID(roomID);
                     FormRoomDetail formRoomDetail = new FormRoomDetail(room);
