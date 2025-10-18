@@ -26,6 +26,13 @@ public class Customer {
         setLoyaltyPoint(loyaltyPoint);
     }
 
+    public Customer(String fullName, String phone, String email, String idCard) {
+        this.fullName = fullName;
+        this.phone = phone;
+        this.email = email;
+        this.idCard = idCard;
+    }
+
     public String getCustomerID() {
         return customerID;
     }

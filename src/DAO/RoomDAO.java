@@ -259,6 +259,7 @@ public class RoomDAO {
     }
 
     // Quản lý đặt phòng --> Hieển thị dạng card (giông dịch vụ) và có các nút filter theo loại phòng (Phòng đơn | Phòng đôi), filter theo trạng thái ('Trống', 'Đặt', 'Check-in')
+    // Phiá trên ben traái vâẫn là thanh tìm kiếm theo mã phòng
     // Đặt phòng
     public boolean datPhong(Customer customer, String roomID, String employeeID, LocalDateTime bookingDate, LocalDateTime checkInDate, LocalDateTime checkOutDate, String bookingType) {
         Connection con = null;
@@ -274,9 +275,9 @@ public class RoomDAO {
             cs.setString(4, customer.getIdCard());
             cs.setString(5, roomID);
             cs.setString(6, employeeID);
-            cs.setString(7, bookingDate.toString());
-            cs.setString(8, checkInDate.toString());
-            cs.setString(9, checkOutDate.toString());
+            cs.setTimestamp(7, Timestamp.valueOf(bookingDate));
+            cs.setTimestamp(8, Timestamp.valueOf(checkInDate));
+            cs.setTimestamp(9, Timestamp.valueOf(checkOutDate));
             cs.setString(10, bookingType);
 
             return cs.executeUpdate() > 0;
@@ -294,7 +295,7 @@ public class RoomDAO {
     public boolean huyDatPhong(String roomID){
         Connection con = null;
         CallableStatement cs = null;
-        String sql = "{call sp_CancelBooking(?}";
+        String sql = "{call sp_CancelBooking(?)}";
 
         try {
             con = connectDB.getConnection();
@@ -314,7 +315,7 @@ public class RoomDAO {
     public boolean checkIn(String roomID){
         Connection con = null;
         CallableStatement cs = null;
-        String sql = "{call sp_CheckIn(?}";
+        String sql = "{call sp_CheckIn(?)}";
 
         try {
             con = connectDB.getConnection();
@@ -334,7 +335,7 @@ public class RoomDAO {
     public boolean checkOut(String roomID){
         Connection con = null;
         CallableStatement cs = null;
-        String sql = "{call sp_CheckOut(?}";
+        String sql = "{call sp_CheckOut(?)}";
 
         try {
             con = connectDB.getConnection();
