@@ -93,7 +93,7 @@ public class FormUpdateServiceToRoom extends JDialog {
             JOptionPane.showMessageDialog(this, "Đã thêm dịch vụ cho " + roomID);
             dispose();
         } else {
-            JOptionPane.showMessageDialog(this, "Không thể thêm dịch vụ (chỉ áp dụng đối với phòng đã check-in", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Không thể thêm dịch vụ (chỉ áp dụng đối với phòng đã check-in)", "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
 }
