@@ -11,8 +11,8 @@ public class PromotionTableModel extends AbstractTableModel {
     private final String[] cols = {
             "PromotionID", "Tên khuyến mãi", "Giảm giá", "Bắt đầu", "Kết thúc", "Số lượng"
     };
-    private final ArrayList<Promotion> dsKM = new ArrayList<>();
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    private ArrayList<Promotion> dsKM = new ArrayList<>();
+    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     public void setDsKM(ArrayList<Promotion> list) {
         dsKM.clear();
