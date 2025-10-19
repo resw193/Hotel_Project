@@ -962,28 +962,29 @@ select * from Service
 select * from Promotion	
 select * from RoomType
 select * from Room
-select * from [dbo].[Order] 
+select * from [Order] where orderStatus = N'Thanh toán'
 select * from OrderDetailRoom
-select * from OrderDetailService
+select * from OrderDetailService 
 select * from Account where username = 'admin'
 select * from Employee where employeeID = 'Emp002' -- sontungmtp@mimosahotel.com
 select * from EmployeeType where typeID = 'ET0001'
 exec sp_DailyOrderStats '2025-10-10'
 
-select * from Room where isAvailable = 1
-select * from OrderDetailRoom
+
+--select * from Room where isAvailable = 1
+--select * from OrderDetailRoom
 
 -- Lấy ra toàn bộ phòng đã được đặt (isAvailable = 0) và status = N'Đặt' --> Lọc ra toàn bộ phòng có status = N'Đặt' --> Thực hiện tính năng check-in
-select r.roomID, r.description, r.isAvailable, r.roomTypeID, r.imgRoomSource, ordr.status
-from Room r
-JOIN OrderDetailRoom ordr
-ON r.roomID = ordr.roomID and ordr.status = N'Đặt'
+--select r.roomID, r.description, r.isAvailable, r.roomTypeID, r.imgRoomSource, ordr.status
+--from Room r
+--JOIN OrderDetailRoom ordr
+--ON r.roomID = ordr.roomID and ordr.status = N'Đặt'
 
 -- Lấy ra toàn bộ phòng đã được đặt (isAvailable = 0) và status = N'Check-in' --> Lọc ra toàn bộ phòng có status = N'Check-in' --> Thực hiện tính năng check-out
-select r.roomID, r.description, r.isAvailable, r.roomTypeID, r.imgRoomSource, ordr.status
-from Room r
-JOIN OrderDetailRoom ordr
-ON r.roomID = ordr.roomID and ordr.status = N'Check-in'
+--select r.roomID, r.description, r.isAvailable, r.roomTypeID, r.imgRoomSource, ordr.status
+--from Room r
+--JOIN OrderDetailRoom ordr
+--ON r.roomID = ordr.roomID and ordr.status = N'Check-in'
 
 
 
@@ -1023,7 +1024,7 @@ ON r.roomID = ordr.roomID and ordr.status = N'Check-in'
 --exec sp_checkOut 'Room02'
 --exec sp_checkOut 'Room03'
 
---exec sp_PayOrder 'Ord00051'
+--exec sp_PayOrder 'Ord00055'
 
 --exec sp_GiaHanPhong 'Room02', '2025-10-24 10:00:00'
 
