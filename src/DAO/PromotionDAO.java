@@ -85,7 +85,51 @@ public class PromotionDAO {
     }
 
 
-    // Thêm khuyến mãi (từ từ làm)
+    // Thêm khuyến mãi
+    public boolean addPromotion(Promotion promotion) {
+        Connection con = null;
+        PreparedStatement ps = null;
+        String sql = "insert into Promotion values(?,?,?,?,?)";
 
-    // Cập nhật thông tin khuyến mãi (cập nhật lại discount %) (từ từ làm)
+        try {
+            con = connectDB.getConnection();
+            ps = con.prepareStatement(sql);
+            ps.setString(1, promotion.getPromotionName());
+            ps.setDouble(2, promotion.getDiscount());
+            ps.setString(3, promotion.getStartTime().toString());
+            ps.setString(4, promotion.getEndTime().toString());
+            ps.setInt(5, promotion.getQuantity());
+
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e){
+            e.printStackTrace();
+            return false;
+        } finally {
+            connectDB.close(ps, null);
+        }
+    }
+
+    // Cập nhật thông tin khuyến mãi (cập nhật lại promotionName và discount %)
+    public boolean updatePromotion(Promotion promotion) {
+        Connection con = null;
+        PreparedStatement ps = null;
+        String sql = "update Promotion set promotionName = ?, discount = ?, startTime = ?, endTime = ? where promotionID = ?";
+
+        try {
+            con = connectDB.getConnection();
+            ps = con.prepareStatement(sql);
+            ps.setString(1, promotion.getPromotionName());
+            ps.setDouble(2, promotion.getDiscount());
+            ps.setString(3, promotion.getStartTime().toString());
+            ps.setString(4, promotion.getEndTime().toString());
+            ps.setString(5, promotion.getPromotionID());
+
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e){
+            e.printStackTrace();
+            return false;
+        } finally {
+            connectDB.close(ps, null);
+        }
+    }
 }

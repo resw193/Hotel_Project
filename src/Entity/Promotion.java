@@ -26,6 +26,8 @@ public class Promotion {
 		this.endTime = endTime;
 	}
 
+
+
 	public String getPromotionID() {
         return promotionID;
     }
