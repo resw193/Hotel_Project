@@ -3,10 +3,7 @@ package DAO;
 import Entity.Customer;
 import connectDB.ConnectDB;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -25,25 +22,25 @@ public class CustomerDAO {
         PreparedStatement ps = null;
         ResultSet rs = null;
         String sql = "select * from Customer";
-        ArrayList<Customer> dsKH = new ArrayList();
+        ArrayList<Customer> dsKH = new ArrayList<>();
 
         try {
             con = connectDB.getConnection();
             ps = con.prepareStatement(sql);
             rs = ps.executeQuery();
 
-            while(rs.next()){
+            while (rs.next()){
                 String customerID = rs.getString("customerID");
                 String fullName = rs.getString("fullName");
                 String phone = rs.getString("phone");
                 String email = rs.getString("email");
-                LocalDateTime regisDate = rs.getTimestamp("regisDate").toLocalDateTime();
+                Timestamp ts = rs.getTimestamp("regisDate");
+                LocalDateTime regisDate = (ts == null) ? null : ts.toLocalDateTime();
                 String idCard = rs.getString("idCard");
                 int loyaltyPoints = rs.getInt("loyaltyPoints");
 
                 dsKH.add(new Customer(customerID, fullName, phone, email, regisDate, idCard, loyaltyPoints));
             }
-
             return dsKH;
         } catch (SQLException e){
             e.printStackTrace();
@@ -90,18 +87,14 @@ public class CustomerDAO {
     public boolean addCustomer(Customer customer){
         Connection con = null;
         PreparedStatement ps = null;
-        String sql = "insert into Customer values(?,?,?,?,?,?)";
-
+        String sql = "INSERT INTO Customer (fullName, phone, email, idCard) VALUES (?,?,?,?)";
         try {
             con = connectDB.getConnection();
             ps = con.prepareStatement(sql);
             ps.setString(1, customer.getFullName());
             ps.setString(2, customer.getPhone());
             ps.setString(3, customer.getEmail());
-            ps.setString(4, customer.getRegisDate().toString());
-            ps.setString(5, customer.getIdCard());
-            ps.setInt(6, customer.getLoyaltyPoint());
-
+            ps.setString(4, customer.getIdCard());
             return ps.executeUpdate() > 0;
         } catch (SQLException e){
             e.printStackTrace();
