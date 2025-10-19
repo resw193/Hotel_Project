@@ -192,7 +192,7 @@ public class FormCustomerManagement extends JPanel {
         Customer c = tableModel.getAt(row);
         if (c == null) return;
         Window owner = SwingUtilities.getWindowAncestor(this);
-        new FormUpdateCustomer(owner, customerDAO, c.getCustomerID()).setVisible(true);
+        new FormUpdateCustomer(owner, c.getCustomerID()).setVisible(true);
         loadDataToTable();
     }
 
