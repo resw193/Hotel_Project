@@ -99,7 +99,7 @@ public class FormCustomerManagement extends JPanel {
 
         btnAdd.addActionListener(e -> {
             Window owner = SwingUtilities.getWindowAncestor(this);
-            new FormAddCustomer(owner, customerDAO).setVisible(true);
+            new FormAddCustomer(owner).setVisible(true);
             loadDataToTable();
         });
 
