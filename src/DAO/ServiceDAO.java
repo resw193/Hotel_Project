@@ -49,6 +49,37 @@ public class ServiceDAO {
             connectDB.close(ps, rs);
         }
     }
+    // Lấy ra sản phẩm theo ID
+    public Service getServiceByID(String serviceID) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        String sql = "select * from Service where serviceID = ?";
+
+        try {
+            conn = connectDB.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, serviceID);
+            rs = ps.executeQuery();
+
+            if(rs.next()) {
+                String serviceName = rs.getString("serviceName");
+                double price = rs.getDouble("price");
+                String serviceType = rs.getString("serviceType");
+                int quantity = rs.getInt("quantity");
+                String imgSource = rs.getString("imgSource");
+
+                return new Service(serviceID, serviceName, serviceType, quantity, price, imgSource);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            connectDB.close(ps, rs);
+        }
+
+        return null;
+    }
 
     // Lấy ra sản phẩm theo loại (Food | Drink) --> Lọc theo drink hoặc food
     public ArrayList<Service> getAllServiceByType(String serviceType){

@@ -13,7 +13,7 @@ public class OrderDetailRoom {
 	private String status;
 	
 	public OrderDetailRoom() {
-		super();
+
 	}
 
 	public OrderDetailRoom(Order order, Room room, LocalDateTime bookingDate, LocalDateTime checkInDate,

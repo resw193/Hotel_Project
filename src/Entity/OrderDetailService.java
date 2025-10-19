@@ -5,7 +5,8 @@ public class OrderDetailService {
 	private int quantity;
 	private double serviceFee;
 	private Service service;
-	
+	private Room room;
+
 	public OrderDetailService() {
 
 	}
@@ -16,7 +17,14 @@ public class OrderDetailService {
 		this.serviceFee = serviceFee;
 		this.service = service;
 	}
-	
+
+	public OrderDetailService(Order order, int quantity, Service service, Room room) {
+		this.order = order;
+		this.quantity = quantity;
+		this.service = service;
+		this.room = room;
+	}
+
 	public Order getOrder() {
 		return order;
 	}
