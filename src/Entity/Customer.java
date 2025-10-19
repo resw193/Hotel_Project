@@ -13,6 +13,7 @@ public class Customer {
     private int loyaltyPoint;        
 
     public Customer() {
+
     }
 
     public Customer(String customerID, String fullName, String phone, String email, LocalDateTime regisDate, String idCard, int loyaltyPoint) {
@@ -45,9 +46,6 @@ public class Customer {
     }
 
     public void setFullName(String fullName) {
-        if (fullName == null || fullName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Họ tên không được rỗng");
-        }
         this.fullName = fullName.trim();
     }
 
@@ -56,9 +54,6 @@ public class Customer {
     }
 
     public void setPhone(String phone) {
-        if (phone == null || !phone.matches("^\\d{10,11}$")) {
-            throw new IllegalArgumentException("Số điện thoại không hợp lệ");
-        }
         this.phone = phone;
     }
 
@@ -66,21 +61,15 @@ public class Customer {
         return email;
     }
 
-//    public void setEmail(String email) {
-//        if (email == null || !email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
-//            throw new IllegalArgumentException("Email không hợp lệ");
-//        }
-//        this.email = email;
-//    }
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
     public LocalDateTime getRegisDate() {
         return regisDate;
     }
 
     public void setRegisDate(LocalDateTime regisDate) {
-        if (regisDate == null || regisDate.isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("Ngày đăng ký phải từ hiện tại trở đi");
-        }
         this.regisDate = regisDate;
     }
 
@@ -89,9 +78,6 @@ public class Customer {
     }
 
     public void setIdCard(String idCard) {
-        if (idCard == null || !idCard.matches("^\\d{12}$")) {
-            throw new IllegalArgumentException("CMND/CCCD không hợp lệ");
-        }
         this.idCard = idCard;
     }
 
@@ -100,9 +86,6 @@ public class Customer {
     }
 
     public void setLoyaltyPoint(int loyaltyPoint) {
-        if (loyaltyPoint < 0) {
-            throw new IllegalArgumentException("Điểm tích lũy không hợp lệ");
-        }
         this.loyaltyPoint = loyaltyPoint;
     }
 
