@@ -17,6 +17,15 @@ public class Order {
 		
 	}
 
+	public Order(String orderID, LocalDateTime orderDate, Employee employee, Customer customer, Promotion promotion, String orderStatus) {
+		this.orderID = orderID;
+		this.orderDate = orderDate;
+		this.employee = employee;
+		this.customer = customer;
+		this.promotion = promotion;
+		this.orderStatus = orderStatus;
+	}
+
 	public Order(LocalDateTime orderDate, Employee employee, Customer customer, Promotion promotion, String orderStatus) {
 		this.orderDate = orderDate;
 		this.employee = employee;

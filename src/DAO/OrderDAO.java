@@ -1,9 +1,6 @@
 package DAO;
 
-import Entity.Customer;
-import Entity.Employee;
-import Entity.Order;
-import Entity.Promotion;
+import Entity.*;
 import connectDB.ConnectDB;
 
 import java.sql.*;
@@ -39,13 +36,14 @@ public class OrderDAO {
             rs = ps.executeQuery();
 
             while(rs.next()) {
+                String orderID = rs.getString("orderID");
                 LocalDateTime orderDate = rs.getTimestamp("orderDate").toLocalDateTime();
                 Employee employee = employeeDAO.getEmployeeByID(rs.getString("employeeID"));
                 Customer customer = customerDAO.getCustomerByID(rs.getString("customerID"));
                 Promotion promotion = promotionDAO.getPromotionByID(rs.getString("promotionID"));
                 String orderStatus = rs.getString("orderStatus");
 
-                dsHoaDon.add(new Order(orderDate, employee, customer, promotion, orderStatus));
+                dsHoaDon.add(new Order(orderID, orderDate, employee, customer, promotion, orderStatus));
             }
 
             return dsHoaDon;
@@ -77,7 +75,7 @@ public class OrderDAO {
                 Promotion promotion = promotionDAO.getPromotionByID(rs.getString("promotionID"));
                 String orderStatus = rs.getString("orderStatus");
 
-                return new Order(orderDate, employee, customer, promotion, orderStatus);
+                return new Order(orderID, orderDate, employee, customer, promotion, orderStatus);
             }
         } catch (SQLException e){
             e.printStackTrace();
@@ -89,7 +87,7 @@ public class OrderDAO {
         return null;
     }
 
-    // Lọc hóa đơn (thanh toán | chưa thanh toán) (có filter lọc hóa đơn)
+    // Lọc hóa đơn (thanh toán | Chưa thanh toán) (có filter lọc hóa đơn)
     public ArrayList<Order> getAllOrderByStatus(String orderStatus) {
         ArrayList<Order> dsHoaDon = new ArrayList<>();
         Connection con = null;
@@ -122,12 +120,12 @@ public class OrderDAO {
     }
 
     // Thanh toán hóa đơn (sp_PayOrder(?)) --> khi người dùng click chuột phải vào dòng hóa đơn chưa thanh toán sẽ có nút thanh toán
-    public ArrayList<Object> thanhToanHoaDon(String orderID){
+    public ArrayList<OrderPay> thanhToanHoaDon(String orderID){
         Connection con = null;
         CallableStatement cs = null;
         ResultSet rs = null;
         String sql = " {call sp_PayOrder(?)} ";
-        ArrayList<Object> informations = new ArrayList<>();
+        ArrayList<OrderPay> informations = new ArrayList<>();
         RoomTypeDAO roomTypeDAO = new RoomTypeDAO();
 
         try {
@@ -137,16 +135,17 @@ public class OrderDAO {
             rs = cs.executeQuery();
 
             if(rs.next()){
-                informations.add(rs.getTimestamp("orderDate").toLocalDateTime());
-                informations.add(employeeDAO.getEmployeeByID(rs.getString("employeeID")));
-                informations.add(customerDAO.getCustomerByID(rs.getString("customerID")));
-                informations.add(rs.getDouble("total"));
-                informations.add(rs.getString("orderStatus"));
-                informations.add(rs.getString("description"));
-                informations.add(roomTypeDAO.getRoomTypeByID(rs.getString("roomTypeID")));
-                informations.add(rs.getTimestamp("checkInDate").toLocalDateTime());
-                informations.add(rs.getTimestamp("checkOutDate").toLocalDateTime());
-                informations.add(rs.getString("bookingType"));
+                Order order = getOrderByID(orderID);
+                String description = rs.getString("description");
+                RoomType roomType = roomTypeDAO.getRoomTypeByID(rs.getString("roomTypeID"));
+                LocalDateTime bookingDate = rs.getTimestamp("bookingDate").toLocalDateTime();
+                LocalDateTime checkInDate = rs.getTimestamp("checkInDate").toLocalDateTime();
+                LocalDateTime checkOutDate = rs.getTimestamp("checkOutDate").toLocalDateTime();
+                String bookingType = rs.getString("bookingType");
+                String serviceName = rs.getString("serviceName");
+                int quantity = rs.getInt("quantity");
+
+                informations.add(new OrderPay(order, description, roomType, bookingDate, checkInDate, checkOutDate, bookingType, serviceName, quantity)) ;
             }
 
             return informations;
