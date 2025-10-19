@@ -19,12 +19,11 @@ import java.util.stream.Collectors;
 
 public class FormCustomerManagement extends JPanel {
 
-    // ===== Theme giống FormOrderManagement
-    private static final Color BG        = new Color(0x0B1F33);
-    private static final Color CARD_BG   = new Color(0x0F2A44);
-    private static final Color BORDER    = new Color(0x274A6B);
-    private static final Color TEXT      = new Color(0xE6F1FF);
-    private static final Color ACCENT    = new Color(0x22D3EE);
+    private static final Color BG = new Color(0x0B1F33);
+    private static final Color CARD_BG = new Color(0x0F2A44);
+    private static final Color BORDER = new Color(0x274A6B);
+    private static final Color TEXT = new Color(0xE6F1FF);
+    private static final Color ACCENT = new Color(0x22D3EE);
     private static final Font  BASE_FONT = new Font("Segoe UI", Font.PLAIN, 13);
 
     private CustomerDAO customerDAO = new CustomerDAO();
