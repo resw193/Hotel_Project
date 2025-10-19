@@ -12,10 +12,10 @@ public class CustomerTableModel extends AbstractTableModel {
             "CustomerID", "Tên khách hàng", "Số điện thoại", "Email",
             "Ngày đăng ký", "CCCD", "Điểm thân thiết"
     };
-    private List<Customer> dsKH = new ArrayList<>();
+    private ArrayList<Customer> dsKH = new ArrayList<>();
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-    public void setDsKH(List<Customer> list){
+    public void setDsKH(ArrayList<Customer> list){
         dsKH.clear();
         if (list != null) dsKH.addAll(list);
         fireTableDataChanged();
@@ -26,9 +26,16 @@ public class CustomerTableModel extends AbstractTableModel {
         return dsKH.get(row);
     }
 
-    @Override public int getRowCount() { return dsKH.size(); }
-    @Override public int getColumnCount() { return cols.length; }
-    @Override public String getColumnName(int column) { return cols[column]; }
+    @Override public int getRowCount() {
+        return dsKH.size();
+    }
+
+    @Override public int getColumnCount() {
+        return cols.length;
+    }
+    @Override public String getColumnName(int column) {
+        return cols[column];
+    }
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
