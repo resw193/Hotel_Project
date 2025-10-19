@@ -257,6 +257,7 @@ public class FormOrderManagement extends JPanel {
         String promoTxt = (o.getPromotion() == null) ? "Không có" : ((int)o.getPromotion().getDiscount()) + "%";
         double amountDue = total + vat - (total * discountRate);
         boolean paidStatus = "Thanh toán".equalsIgnoreCase(o.getOrderStatus());
+        double uiDue = paidStatus ? 0d : amountDue;   // nêếu đã thanh toán thì tiền trong máy sẽ = 0
 
         // thông tin tiền phải trả
         footer.add(text("Tổng: " + formatVND(total)), "wrap");
@@ -270,7 +271,7 @@ public class FormOrderManagement extends JPanel {
         cash.setBorder(new LineBorder(BORDER));
 
         JLabel lblPaid = text("Khách đưa: " + formatVND(0));
-        JLabel lblRemain = text("Còn thiếu: " + formatVND(amountDue));
+        JLabel lblRemain = text("Còn thiếu: " + formatVND(uiDue));
         JLabel lblChange = text("Tiền thối: " + formatVND(0));
         cash.add(lblPaid,   "wrap");
         cash.add(lblRemain, "wrap");
@@ -285,7 +286,7 @@ public class FormOrderManagement extends JPanel {
             b.putClientProperty("val", v);
             b.addActionListener(e -> {
                 paid[0] += (int) b.getClientProperty("val");
-                updateCashUI(paid[0], amountDue, lblPaid, lblRemain, lblChange);
+                updateCashUI(paid[0], uiDue, lblPaid, lblRemain, lblChange);
             });
             denoms.add(b);
         }
@@ -296,21 +297,21 @@ public class FormOrderManagement extends JPanel {
 
         JButton btnExact = chipButton("Bằng đúng");
         btnExact.addActionListener(e -> {
-            paid[0] = amountDue;
-            updateCashUI(paid[0], amountDue, lblPaid, lblRemain, lblChange);
+            paid[0] = uiDue;
+            updateCashUI(paid[0], uiDue, lblPaid, lblRemain, lblChange);
         });
 
         JButton btnClear = chipButton("Xoá");
         btnClear.addActionListener(e -> {
             paid[0] = 0;
-            updateCashUI(paid[0], amountDue, lblPaid, lblRemain, lblChange);
+            updateCashUI(paid[0], uiDue, lblPaid, lblRemain, lblChange);
         });
 
         tools.add(btnExact);
         tools.add(btnClear);
         cash.add(tools, "growx, wrap 10");
 
-        JLabel lblFinal = boldText("Thành tiền: " + formatVND(amountDue));
+        JLabel lblFinal = boldText("Thành tiền: " + formatVND(uiDue));
         cash.add(lblFinal);
 
         footer.add(cash, "grow, wrap");
