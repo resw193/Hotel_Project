@@ -128,7 +128,7 @@ CREATE TABLE Service (
     serviceID CHAR(6) PRIMARY KEY DEFAULT ('Serv' + RIGHT('00' + CAST(NEXT VALUE FOR ServiceSequence AS VARCHAR(2)), 2)),
     serviceName NVARCHAR(100) NOT NULL,
     price MONEY NOT NULL,
-    description NVARCHAR(200),
+    serviceType NVARCHAR(200),
     quantity INT,
     imgSource VARCHAR(40)
 );
@@ -206,7 +206,7 @@ END;
 GO
 
 -- Procedure: Đặt phòng (tạo Order, rồi thêm OrderDetailRoom cho từng phòng)
-CREATE PROCEDURE sp_BookRoom
+CREATE OR ALTER PROCEDURE sp_BookRoom
     @fullName NVARCHAR(100),
     @phone CHAR(10),
     @email VARCHAR(100) = NULL,
@@ -266,10 +266,9 @@ BEGIN
         SET @promotionID = 'Promo03';  -- 20%
     END;
     
-    -- Áp dụng khuyến mãi vào total (giảm % trên total hiện tại - ban đầu chỉ phòng)
+	-- set khuyến mãi
     IF @discount > 0 BEGIN
-        SET @total = @roomFee * (1 - @discount / 100);
-        UPDATE [Order] SET total = @total, promotionID = @promotionID WHERE orderID = @orderID;
+        UPDATE [Order] SET promotionID = @promotionID WHERE orderID = @orderID;
     END;
     
     UPDATE Room SET isAvailable = 0 WHERE roomID = @roomID;
@@ -340,7 +339,7 @@ END;
 GO
 
 -- Procedure: Check-out (cập nhật checkOutDate, tính lại roomFee nếu trễ, áp dụng khuyến mãi trên total)
-CREATE PROCEDURE sp_CheckOut
+CREATE OR ALTER PROCEDURE sp_CheckOut
     @roomID CHAR(6)
 AS
 BEGIN
@@ -385,11 +384,10 @@ BEGIN
         SET @discount = 20;
         SET @promotionID = 'Promo03';  -- 20%
     END;
-    
+   
     -- Áp dụng khuyến mãi vào total (giảm % trên total hiện tại)
     IF @discount > 0 BEGIN
-        SET @total = @total * (1 - @discount / 100);
-        UPDATE [Order] SET total = @total, promotionID = @promotionID WHERE orderID = @orderID;
+        UPDATE [Order] SET promotionID = @promotionID WHERE orderID = @orderID;
     END ELSE BEGIN
         UPDATE [Order] SET total = @total WHERE orderID = @orderID;
     END;
@@ -415,7 +413,7 @@ BEGIN
         @oldCheckOutDate   SMALLDATETIME,
         @roomTypeID        CHAR(6);
 
-    -- Lấy bản ghi ODR đang Check-in kèm loại phòng
+    -- Lấy bản ghi OrderDetailRoom đang Check-in hiện tại kèm loại phòng (để tính roomFee mới sau khi thời gian check-out dài ra)
     SELECT TOP 1
            @orderDetailRoomID = odr.orderDetailRoomID,
            @bookingType       = odr.bookingType,
@@ -453,9 +451,9 @@ BEGIN
      WHERE orderDetailRoomID = @orderDetailRoomID;
 
     -- Trả về thông tin đã cập nhật
-    SELECT orderDetailRoomID, orderID, roomID, bookingType, checkInDate, checkOutDate, roomFee, status
-      FROM OrderDetailRoom
-     WHERE orderDetailRoomID = @orderDetailRoomID;
+    --SELECT orderDetailRoomID, orderID, roomID, bookingType, checkInDate, checkOutDate, roomFee, status
+    --FROM OrderDetailRoom
+    --WHERE orderDetailRoomID = @orderDetailRoomID;
 END;
 GO
 
@@ -473,8 +471,9 @@ BEGIN
 END;
 GO
 
+
 -- Procedure: Thanh toán hóa đơn (cập nhật orderStatus = 'Thanh toán')
-CREATE PROCEDURE sp_PayOrder
+CREATE OR ALTER PROCEDURE sp_PayOrder
     @orderID CHAR(8)
 AS
 BEGIN
@@ -501,14 +500,43 @@ BEGIN
 
     UPDATE OrderDetailRoom SET status = N'Hoàn tất' WHERE orderID = @orderID;
 
-    -- Trả về gói thông tin để in (giữ nguyên như cũ)
-    SELECT o.orderDate, o.employeeID, o.customerID, o.total, o.orderStatus,
-           r.description, rt.roomTypeID, odr.checkInDate, odr.checkOutDate, odr.bookingType
-      FROM [Order] o
-      LEFT JOIN OrderDetailRoom odr ON o.orderID = odr.orderID
-      LEFT JOIN Room r  ON odr.roomID = r.roomID
-      LEFT JOIN RoomType rt ON r.roomTypeID = rt.roomTypeID
-     WHERE o.orderID = @orderID;
+	-- Tính lại total sau khi áp dụng khuyến mãi để ra được thành tiền cuối cùng
+	DECLARE @subTotal  MONEY, @discount  DECIMAL(9,2), @finalTotal MONEY;
+
+    SELECT 
+        @subTotal = ISNULL(o.total, 0),
+        @discount = ISNULL(CAST(p.discount AS DECIMAL(9,2)), 0)
+    FROM [Order] o
+    LEFT JOIN Promotion p ON o.promotionID = p.promotionID
+    WHERE o.orderID = @orderID;
+
+	-- Check Order có khuyến mãi hay không
+    IF @discount < 0 OR @discount > 100 SET @discount = 0;
+
+	-- Tính ra thành tiền cuối cùng
+    SET @finalTotal = CAST(@subTotal * (1 - (@discount / 100.0)) AS MONEY);
+
+    UPDATE [Order]
+    SET total = @finalTotal
+    WHERE orderID = @orderID;
+
+    -- Trả về gói thông tin để in 
+	SELECT o.orderID, o.orderDate, o.employeeID, o.customerID, o.total, o.orderStatus,
+           r.description, rt.roomTypeID, odr.bookingDate, odr.checkInDate, odr.checkOutDate, odr.bookingType, svc.serviceName, svc.serviceQuantity
+     FROM [Order] o
+    LEFT JOIN OrderDetailRoom odr ON o.orderID = odr.orderID
+    LEFT JOIN Room r  ON odr.roomID = r.roomID
+    LEFT JOIN RoomType rt ON r.roomTypeID = rt.roomTypeID
+    OUTER APPLY (
+        SELECT s.serviceName,
+               SUM(ods.quantity) AS serviceQuantity
+        FROM OrderDetailService ods
+        JOIN Service s ON s.serviceID = ods.serviceID
+        WHERE ods.orderID = o.orderID AND ods.roomID = odr.roomID
+		GROUP BY s.serviceName
+    ) AS svc
+    WHERE o.orderID = @orderID
+    ORDER BY odr.roomID, svc.serviceName;
 END;
 GO
 
@@ -516,7 +544,7 @@ GO
 -- Chức năng cập nhật dịch vụ cho phòng đang sử dụng (Khi phòng đã check-in thì mới được thêm dịch vụ vào phòng)
 -- Sử dụng trong Quản lý phòng (mỗi dòng trong table là 1 phòng --> khi click chuột phải vào có nút cập nhật dịch vụ)
 -- Khi cập nhật dịch vụ cho phòng thì --> insert into OrderDetailService và cộng tiền Service (price * quantity (vừa đặt)) vào Total trong Order (không tính lại roomFee)
-CREATE PROCEDURE sp_AddServiceToRoom
+CREATE OR ALTER PROCEDURE sp_AddServiceToRoom
     @roomID CHAR(6),
     @serviceName NVARCHAR(100),
     @quantity INT
@@ -549,8 +577,8 @@ BEGIN
     SET @serviceFee = @quantity * @price;
 
     -- Thêm vào OrderDetailService
-    INSERT INTO OrderDetailService (orderID, quantity, serviceFee, serviceID)
-    VALUES (@orderID, @quantity, @serviceFee, @serviceID);
+    INSERT INTO OrderDetailService (orderID, quantity, serviceFee, serviceID, roomID)
+    VALUES (@orderID, @quantity, @serviceFee, @serviceID, @roomID);
 
 	-- Cộng dồn serviceFee vào tổng hóa đơn ngay khi thêm dịch vụ
     UPDATE [Order]
@@ -833,20 +861,31 @@ INSERT INTO RoomType (typeName, pricePerHour, pricePerNight, pricePerDay, lateFe
 
 -- Room
 INSERT INTO Room (description, roomTypeID) VALUES (N'Phòng đơn tầng 1', 'RT0001');
-INSERT INTO Room (description, isAvailable, roomTypeID) VALUES (N'Phòng 101 - View vườn, gần sảnh', 1, 'RT0001');
-INSERT INTO Room (description, isAvailable, roomTypeID) VALUES (N'Phòng 102 - View thành phố', 1, 'RT0001');
-INSERT INTO Room (description, isAvailable, roomTypeID) VALUES (N'Phòng 103 - Yên tĩnh, cuối hành lang', 1, 'RT0001');
-INSERT INTO Room (description, isAvailable, roomTypeID) VALUES (N'Phòng 201 - Ban công, view biển', 1, 'RT0002');
-INSERT INTO Room (description, isAvailable, roomTypeID) VALUES (N'Phòng 202 - Ban công, view biển', 1, 'RT0002');
-INSERT INTO Room (description, isAvailable, roomTypeID) VALUES (N'Phòng 203 - Gần thang máy', 1, 'RT0002');
+INSERT INTO Room (description, isAvailable, roomTypeID, imgRoomSource) VALUES (N'Phòng 101 - View vườn, gần sảnh', 1, 'RT0001', 'images/1.jpg');
+INSERT INTO Room (description, isAvailable, roomTypeID, imgRoomSource) VALUES (N'Phòng 102 - View thành phố', 1, 'RT0001', 'images/2.jpg');
+INSERT INTO Room (description, isAvailable, roomTypeID, imgRoomSource) VALUES (N'Phòng 103 - Yên tĩnh, cuối hành lang', 1, 'RT0001', 'images/3.jpg');
+INSERT INTO Room (description, isAvailable, roomTypeID, imgRoomSource) VALUES (N'Phòng 201 - Ban công, view biển', 1, 'RT0002', 'images/4.jpg');
+INSERT INTO Room (description, isAvailable, roomTypeID, imgRoomSource) VALUES (N'Phòng 202 - Ban công, view biển', 1, 'RT0002', 'images/5.jpg');
+INSERT INTO Room (description, isAvailable, roomTypeID, imgRoomSource) VALUES (N'Phòng 203 - Gần thang máy', 1, 'RT0002', 'images/6.jpg');
 GO
 
+use mimosa_hotel
+
+
 -- Service
-INSERT INTO Service (serviceName, price, quantity) VALUES (N'Nước ngọt', 15000, 10);
-INSERT INTO Service (serviceName, price, quantity) VALUES (N'Nước uống đóng chai', 15000, 20);
-INSERT INTO Service (serviceName, price, quantity) VALUES (N'Mì tôm', 15000, 30);
-INSERT INTO Service (serviceName, price, quantity) VALUES (N'Giặt ủi', 15000, 10);
-INSERT INTO Service (serviceName, price, quantity) VALUES (N'Bia Tiger', 20000, 60);
+INSERT INTO Service (serviceName, price, quantity, serviceType, imgSource) VALUES (N'Nước ngọt', 15000, 10, 'Drink', 'images/pepsi.png');
+INSERT INTO Service (serviceName, price, quantity, serviceType, imgSource) VALUES (N'Nước uống đóng chai', 15000, 20, 'Drink', 'images/aquafina.jpg');
+INSERT INTO Service (serviceName, price, quantity, serviceType, imgSource) VALUES (N'Mì tôm', 15000, 30, 'Food', 'images/mitom.jpg');
+INSERT INTO Service (serviceName, price, quantity, serviceType, imgSource) VALUES (N'Cocacola', 15000, 10, 'Drink', 'images/cocacola.jpg');
+INSERT INTO Service (serviceName, price, quantity, serviceType, imgSource) VALUES (N'Bia Tiger', 20000, 60, 'Drink', 'images/biatiger.jpg');
+INSERT INTO Service (serviceName, price, quantity, serviceType, imgSource) VALUES (N'7 up', 20000, 60, 'Drink', 'images/7up.png');
+INSERT INTO Service (serviceName, price, quantity, serviceType, imgSource) VALUES (N'Cơm bò xào', 30000, 60, 'Food', 'images/comboxao.jpg');
+INSERT INTO Service (serviceName, price, quantity, serviceType, imgSource) VALUES (N'Mì ý', 30000, 60, 'Food', 'images/miy.jpg');
+INSERT INTO Service (serviceName, price, quantity, serviceType, imgSource) VALUES (N'Nước ép táo', 20000, 60, 'Drink', 'images/nuoceptao.png');
+INSERT INTO Service (serviceName, price, quantity, serviceType, imgSource) VALUES (N'Mì khoai tây omachi', 30000, 60, 'Food', 'images/omachi.png');
+INSERT INTO Service (serviceName, price, quantity, serviceType, imgSource) VALUES (N'Redbull', 20000, 60, 'Drink', 'images/redbull.png');
+INSERT INTO Service (serviceName, price, quantity, serviceType, imgSource) VALUES (N'Rượu vang', 20000, 60, 'Drink', 'images/ruouvang.png');
+INSERT INTO Service (serviceName, price, quantity, serviceType, imgSource) VALUES (N'Soju', 20000, 60, 'Drink', 'images/soju.png');
 GO
 
 -- Promotion
@@ -864,7 +903,7 @@ GO
 --GO
 
 ---- Order (Mẫu, khi đặt phòng) 
-EXEC sp_BookRoom N'Khách Mẫu', '0987654321', NULL, NULL, 'Room01', 'Emp001', '2025-09-01 00:00:00', '2025-09-01 14:00:00', '2025-09-02 12:00:00', N'Giờ';
+--EXEC sp_BookRoom N'Khách Mẫu', '0987654321', NULL, NULL, 'Room01', 'Emp001', '2025-09-01 00:00:00', '2025-09-01 14:00:00', '2025-09-02 12:00:00', N'Giờ';
 
 ---- Kịch bản 2: Lê Văn Cường (18 điểm) đặt phòng đôi theo đêm, sẽ được giảm giá 10%
 --EXEC sp_BookRoom N'Lê Văn Cường', '0903456789', 'cuong.le@email.com', '034567890123', 'Room04', 'Emp002', '2025-09-15 00:00:00', '2025-09-20 19:00:00', '2025-09-21 08:00:00', N'Đêm';
@@ -910,12 +949,17 @@ EXEC sp_BookRoom N'Khách Mẫu', '0987654321', NULL, NULL, 'Room01', 'Emp001', 
 --alter table Employee
 --add gender bit
 
---exec sp_PayOrder 'Ord00001'
---exec sp_PayOrder 'Ord00002'
+ALTER TABLE OrderDetailService
+ADD roomID CHAR(6) NULL;
+
+ALTER TABLE OrderDetailService
+ADD CONSTRAINT FK_OrderDetailService_Room
+FOREIGN KEY (roomID) REFERENCES Room(roomID);
+
 use mimosa_hotel
 select * from Customer
-select * from Service
-select * from Promotion
+select * from Service 
+select * from Promotion	
 select * from RoomType
 select * from Room
 select * from [dbo].[Order] 
@@ -926,25 +970,153 @@ select * from Employee where employeeID = 'Emp002' -- sontungmtp@mimosahotel.com
 select * from EmployeeType where typeID = 'ET0001'
 exec sp_DailyOrderStats '2025-10-10'
 
+select * from Room where isAvailable = 1
+select * from OrderDetailRoom
+
+-- Lấy ra toàn bộ phòng đã được đặt (isAvailable = 0) và status = N'Đặt' --> Lọc ra toàn bộ phòng có status = N'Đặt' --> Thực hiện tính năng check-in
+select r.roomID, r.description, r.isAvailable, r.roomTypeID, r.imgRoomSource, ordr.status
+from Room r
+JOIN OrderDetailRoom ordr
+ON r.roomID = ordr.roomID and ordr.status = N'Đặt'
+
+-- Lấy ra toàn bộ phòng đã được đặt (isAvailable = 0) và status = N'Check-in' --> Lọc ra toàn bộ phòng có status = N'Check-in' --> Thực hiện tính năng check-out
+select r.roomID, r.description, r.isAvailable, r.roomTypeID, r.imgRoomSource, ordr.status
+from Room r
+JOIN OrderDetailRoom ordr
+ON r.roomID = ordr.roomID and ordr.status = N'Check-in'
+
+
+
+
+--select * 
+--from Room r
+--JOIN RoomType rt 
+--ON r.roomTypeID = rt.roomTypeID 
+--where rt.typeName = N'Phòng đơn'
+
 -- Room 1
 --exec sp_CheckIn 'Room01'
 --exec sp_CheckOut 'Room01'
---exec sp_PayOrder 'Ord00001'
+--exec sp_PayOrder 'Ord00039'
 --exec sp_GiaHanPhong 'Room01', '2025-09-02 13:00:00'
 
--- Room 2
-EXEC sp_BookRoom N'Phan Tấn Lộc',   '0911111103', 'loc.phan@mail.com',  '111111111113', 'Room02', 'Emp003',
-'2025-09-10 00:00:00', '2025-09-10 10:00:00', '2025-09-11 10:00:00', N'Ngày';
---EXEC sp_AddServiceToRoom 'Room02', N'Bia Tiger', 5
---EXEC sp_AddServiceToRoom 'Room02', N'Bia Tiger', 5
+-- Phan Tấn Lộc đặt 3 phòng
+--EXEC sp_BookRoom N'Phan Tấn Lộc',   '0911111103', 'loc.phan@mail.com',  '111111111113', 'Room01', 'Emp003',
+--'2025-09-10 00:00:00', '2025-09-10 10:00:00', '2025-09-11 10:00:00', N'Ngày';
 
+--EXEC sp_BookRoom N'Phan Tấn Lộc',   '0911111103', 'loc.phan@mail.com',  '111111111113', 'Room02', 'Emp003',
+--'2025-09-10 00:00:00', '2025-09-10 10:00:00', '2025-09-11 10:00:00', N'Ngày';
+
+--EXEC sp_BookRoom N'Phan Tấn Lộc',   '0911111103', 'loc.phan@mail.com',  '111111111113', 'Room03', 'Emp003',
+--'2025-09-10 00:00:00', '2025-09-10 10:00:00', '2025-09-11 10:00:00', N'Ngày';
+
+--exec sp_checkIn 'Room01'
 --exec sp_CheckIn 'Room02'
---exec sp_CheckOut 'Room02'
---exec sp_PayOrder 'Ord00002'
---exec sp_GiaHanPhong 'Room02', '2025-09-12 10:00:00'
+--exec sp_checkIn 'Room03'
+
+--EXEC sp_AddServiceToRoom 'Room01', N'Bia Tiger', 5
+--EXEC sp_AddServiceToRoom 'Room02', N'Bia Tiger', 5
+--EXEC sp_AddServiceToRoom 'Room03', N'Bia Tiger', 5
+
+
+--exec sp_checkOut 'Room01'
+--exec sp_checkOut 'Room02'
+--exec sp_checkOut 'Room03'
+
+--exec sp_PayOrder 'Ord00051'
+
+--exec sp_GiaHanPhong 'Room02', '2025-10-24 10:00:00'
 
 --exec sp_CancelBooking 'Room01'
 --exec sp_CancelBooking 'Room02'
+
+-- Dữ liệu ảo 
+-- KH1: 9/05 – Phòng đơn 4 giờ
+--EXEC sp_BookRoom N'Ngô Minh Hào', '0911111101', 'hao.ngo@mail.com', '111111111111',
+--                  'Room01', 'Emp001',
+--                  '2025-09-05 00:00:00', '2025-09-05 13:00:00', '2025-09-05 17:00:00', N'Giờ';
+--EXEC sp_CheckIn  'Room01';
+--EXEC sp_CheckOut 'Room01';
+--DECLARE @o1 CHAR(8) = (SELECT TOP 1 o.orderID FROM [Order] o JOIN Customer c ON o.customerID=c.customerID WHERE c.phone='0911111101' ORDER BY o.orderID DESC);
+--EXEC sp_PayOrder @o1;
+
+---- KH2: 9/07 – Phòng đôi 1 đêm
+--EXEC sp_BookRoom N'Đặng Thu Hà', '0911111102', 'ha.dang@mail.com', '111111111112',
+--                  'Room05', 'Emp002',
+--                  '2025-09-07 00:00:00', '2025-09-07 19:00:00', '2025-09-08 07:00:00', N'Đêm';
+--EXEC sp_CheckIn  'Room05';
+--EXEC sp_CheckOut 'Room05';
+--DECLARE @o2 CHAR(8) = (SELECT TOP 1 o.orderID FROM [Order] o JOIN Customer c ON o.customerID=c.customerID WHERE c.phone='0911111102' ORDER BY o.orderID DESC);
+--EXEC sp_PayOrder @o2;
+
+---- KH3: 9/10 – Phòng đơn 1 ngày + dịch vụ
+--EXEC sp_BookRoom N'Phan Tấn Lộc', '0911111103', 'loc.phan@mail.com', '111111111113',
+--                  'Room02', 'Emp003',
+--                  '2025-09-10 00:00:00', '2025-09-10 10:00:00', '2025-09-11 10:00:00', N'Ngày';
+--EXEC sp_CheckIn  'Room02';
+--EXEC sp_AddServiceToRoom 'Room02', N'Bia Tiger', 5;
+--EXEC sp_CheckOut 'Room02';
+--DECLARE @o3 CHAR(8) = (SELECT TOP 1 o.orderID FROM [Order] o JOIN Customer c ON o.customerID=c.customerID WHERE c.phone='0911111103' ORDER BY o.orderID DESC);
+--EXEC sp_PayOrder @o3;
+
+---- KH4: 9/12 – Phòng đôi 6 giờ
+--EXEC sp_BookRoom N'Nguyễn Ái Vy', '0911111104', 'vy.nguyen@mail.com', '111111111114',
+--                  'Room06', 'Emp001',
+--                  '2025-09-12 00:00:00', '2025-09-12 14:00:00', '2025-09-12 20:00:00', N'Giờ';
+--EXEC sp_CheckIn  'Room06';
+--EXEC sp_CheckOut 'Room06';
+--DECLARE @o4 CHAR(8) = (SELECT TOP 1 o.orderID FROM [Order] o JOIN Customer c ON o.customerID=c.customerID WHERE c.phone='0911111104' ORDER BY o.orderID DESC);
+--EXEC sp_PayOrder @o4;
+
+---- KH5: 9/15 – Phòng đơn 1 đêm + giặt ủi
+--EXEC sp_BookRoom N'Vũ Thành Nam', '0911111105', 'nam.vu@mail.com', '111111111115',
+--                  'Room03', 'Emp002',
+--                  '2025-09-15 00:00:00', '2025-09-15 18:30:00', '2025-09-16 07:30:00', N'Đêm';
+--EXEC sp_CheckIn  'Room03';
+--EXEC sp_AddServiceToRoom 'Room03', N'Giặt ủi', 2;
+--EXEC sp_CheckOut 'Room03';
+--DECLARE @o5 CHAR(8) = (SELECT TOP 1 o.orderID FROM [Order] o JOIN Customer c ON o.customerID=c.customerID WHERE c.phone='0911111105' ORDER BY o.orderID DESC);
+--EXEC sp_PayOrder @o5;
+
+---- KH6: 9/24 – Phòng đôi 1 đêm + nước đóng chai
+--EXEC sp_BookRoom N'Phạm Thảo Chi', '0911111108', 'chi.pham@mail.com', '111111111118',
+--                  'Room05', 'Emp002',
+--                  '2025-09-24 00:00:00', '2025-09-24 20:00:00', '2025-09-25 08:00:00', N'Đêm';
+--EXEC sp_CheckIn  'Room05';
+--EXEC sp_AddServiceToRoom 'Room05', N'Nước uống đóng chai', 4;
+--EXEC sp_CheckOut 'Room05';
+--DECLARE @o6 CHAR(8) = (SELECT TOP 1 o.orderID FROM [Order] o JOIN Customer c ON o.customerID=c.customerID WHERE c.phone='0911111108' ORDER BY o.orderID DESC);
+--EXEC sp_PayOrder @o6;
+
+
+
+--IF NOT EXISTS (SELECT 1 FROM Customer WHERE phone='0912000001')
+--    INSERT INTO Customer(fullName, phone, email) VALUES (N'KH Tháng Trước 1','0912000001','pr1@mail.com');
+--IF NOT EXISTS (SELECT 1 FROM Customer WHERE phone='0912000002')
+--    INSERT INTO Customer(fullName, phone, email) VALUES (N'KH Tháng Trước 2','0912000002','pr2@mail.com');
+--IF NOT EXISTS (SELECT 1 FROM Customer WHERE phone='0912000003')
+--    INSERT INTO Customer(fullName, phone, email) VALUES (N'KH Tháng Trước 3','0912000003','pr3@mail.com');
+
+--DECLARE @Cus1 CHAR(10) = (SELECT TOP 1 customerID FROM Customer WHERE phone='0912000001' ORDER BY customerID);
+--DECLARE @Cus2 CHAR(10) = (SELECT TOP 1 customerID FROM Customer WHERE phone='0912000002' ORDER BY customerID);
+--DECLARE @Cus3 CHAR(10) = (SELECT TOP 1 customerID FROM Customer WHERE phone='0912000003' ORDER BY customerID);
+
+-- 2) Chèn order đã thanh toán trong tháng 09/2025
+--INSERT INTO [Order](orderDate,total,employeeID,customerID,orderStatus) VALUES
+--('2025-09-03T10:20:00',  450000, 'Emp001', @Cus1, N'Thanh toán'),
+--('2025-09-05T19:10:00',  820000, 'Emp002', @Cus2, N'Thanh toán'),
+--('2025-09-07T08:45:00',  290000, 'Emp003', @Cus1, N'Thanh toán'),
+--('2025-09-10T12:00:00', 1200000, 'Emp002', @Cus3, N'Thanh toán'),
+--('2025-09-12T21:30:00',  360000, 'Emp001', @Cus2, N'Thanh toán'),
+--('2025-09-15T09:00:00',  980000, 'Emp001', @Cus1, N'Thanh toán'),
+--('2025-09-18T18:15:00',  650000, 'Emp002', @Cus3, N'Thanh toán'),
+--('2025-09-22T14:05:00',  510000, 'Emp003', @Cus2, N'Thanh toán'),
+--('2025-09-25T20:40:00', 1350000, 'Emp002', @Cus1, N'Thanh toán'),
+--('2025-09-28T11:25:00',  420000, 'Emp001', @Cus3, N'Thanh toán');
+--GO
+
+
+
 
 /* ===================== THÁNG 9/2025 – thêm dữ liệu ===================== */
 ---- 9/5: 4 giờ phòng đơn
