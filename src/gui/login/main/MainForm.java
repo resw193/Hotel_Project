@@ -104,9 +104,9 @@ public class MainForm extends JLayeredPane {
                 else if (index == 5) Application.showForm(new FormOrderManagement());
                 else if (index == 6) {
                     switch (subIndex) {
-                        case 0 -> Application.showForm(new FormCustomerManagement());
-                        case 1 -> Application.showForm(new FormPromotionManagement());
-                        case 2 -> Application.showForm(new FormThongKe());
+                        case 1 -> Application.showForm(new FormCustomerManagement());
+                        case 2 -> Application.showForm(new FormPromotionManagement());
+                        case 3 -> Application.showForm(new FormThongKe());
                         default -> action.cancel();
                     }
                 } else if (index == 7) Application.showForm(new FormServiceManagement());
