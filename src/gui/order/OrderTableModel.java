@@ -9,7 +9,7 @@ import java.util.List;
 
 public class OrderTableModel extends AbstractTableModel {
     private final String[] cols = {
-            "Mã hóa đơn", "Ngày lập", "Nhân viên", "Khách hàng", "Mã KM", "Trạng thái", "Tổng tiền"
+            "Mã hóa đơn", "Ngày lập hóa đơn", "Nhân viên", "Khách hàng", "Mã KM", "Trạng thái", "Tổng tiền"
     };
 
     private List<Order> dsHoaDon = new ArrayList<>();
