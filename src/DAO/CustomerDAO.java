@@ -7,9 +7,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
+// Thêm, câập nhật thông tin khách hàng, lọc khách hàng theo điểm thân thiết (Tất cả, >= 20, >= 40), Thanh tìm kiếm khách hàng theo tên
 public class CustomerDAO {
     private ConnectDB connectDB;
 
@@ -131,6 +133,77 @@ public class CustomerDAO {
             connectDB.close(ps, null);
         }
     }
+
+    // Lọc khách hàng theo điểm thaân thiết
+    public ArrayList<Customer> getAllCustomerByLoyaltyPoint(int loyaltyPoints){
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        String sql = "select * from Customer where loyaltyPoints >= ?";
+        ArrayList<Customer> dsKH = new ArrayList();
+
+        try {
+            con = connectDB.getConnection();
+            ps = con.prepareStatement(sql);
+            ps.setInt(1, loyaltyPoints);
+            rs = ps.executeQuery();
+
+            while(rs.next()){
+                String customerID = rs.getString("customerID");
+                String fullName = rs.getString("fullName");
+                String phone = rs.getString("phone");
+                String email = rs.getString("email");
+                LocalDateTime regisDate = rs.getTimestamp("regisDate").toLocalDateTime();
+                String idCard = rs.getString("idCard");
+                int loyalty = rs.getInt("loyaltyPoints");
+
+                dsKH.add(new Customer(customerID, fullName, phone, email, regisDate, idCard, loyalty));
+            }
+
+            return dsKH;
+        } catch (SQLException e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    // Tìm kiếm khách hàng theo tên
+    public ArrayList<Customer> getAllCustomerByName(String customerName){
+        ArrayList<Customer> dsKH = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        String sql = "select * from Customer where fullName like ?";
+
+        try {
+            conn = connectDB.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, "%" + customerName + "%");
+            rs = ps.executeQuery();
+
+            while(rs.next()){
+                String customerID = rs.getString("customerID");
+                String fullName = rs.getString("fullName");
+                String phoneNumber = rs.getString("phone");
+                String email = rs.getString("email");
+                LocalDateTime regDate = rs.getTimestamp("regisDate").toLocalDateTime();
+                String idCard = rs.getString("idCard");
+                int loyaltyPoints = rs.getInt("loyaltyPoints");
+
+                dsKH.add(new Customer(customerID, fullName, phoneNumber, email, regDate, idCard, loyaltyPoints));
+            }
+
+            return dsKH;
+        } catch (SQLException e){
+            e.printStackTrace();
+            return null;
+        } finally {
+            connectDB.close(ps, rs);
+        }
+    }
+
+
+
 
     // Lấy ra khách hàng theo số CCCD (idCard)
     public Customer getCustomerByCCCD(String idCard){
