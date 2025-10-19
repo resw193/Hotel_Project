@@ -15,15 +15,14 @@ public class Customer {
     public Customer() {
     }
 
-    public Customer(String customerID, String fullName, String phone, String email, LocalDateTime regisDate,
-            String idCard, int loyaltyPoint) {
-        setCustomerID(customerID);
-        setFullName(fullName);
-        setPhone(phone);
-        setEmail(email);
-        setRegisDate(regisDate);
-        setIdCard(idCard);
-        setLoyaltyPoint(loyaltyPoint);
+    public Customer(String customerID, String fullName, String phone, String email, LocalDateTime regisDate, String idCard, int loyaltyPoint) {
+        this.customerID = customerID;
+        this.fullName = fullName;
+        this.phone = phone;
+        this.email = email;
+        this.regisDate = regisDate;
+        this.idCard = idCard;
+        this.loyaltyPoint = loyaltyPoint;
     }
 
     public Customer(String fullName, String phone, String email, String idCard) {
@@ -67,12 +66,12 @@ public class Customer {
         return email;
     }
 
-    public void setEmail(String email) {
-        if (email == null || !email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
-            throw new IllegalArgumentException("Email không hợp lệ");
-        }
-        this.email = email;
-    }
+//    public void setEmail(String email) {
+//        if (email == null || !email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+//            throw new IllegalArgumentException("Email không hợp lệ");
+//        }
+//        this.email = email;
+//    }
 
     public LocalDateTime getRegisDate() {
         return regisDate;

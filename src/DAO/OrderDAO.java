@@ -28,7 +28,7 @@ public class OrderDAO {
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        String sql = "select * from Order";
+        String sql = "SELECT orderID, orderDate, total, employeeID, customerID, promotionID, orderStatus FROM [dbo].[Order]";
 
         try {
             con = connectDB.getConnection();
@@ -43,7 +43,9 @@ public class OrderDAO {
                 Promotion promotion = promotionDAO.getPromotionByID(rs.getString("promotionID"));
                 String orderStatus = rs.getString("orderStatus");
 
-                dsHoaDon.add(new Order(orderID, orderDate, employee, customer, promotion, orderStatus));
+                Order order = new Order(orderID, orderDate, employee, customer, promotion, orderStatus);
+                order.setTotal(rs.getDouble("total"));
+                dsHoaDon.add(order);
             }
 
             return dsHoaDon;
@@ -60,7 +62,7 @@ public class OrderDAO {
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        String sql = "select * from Order where orderID = ?";
+        String sql = "select * from [dbo].[Order] where orderID = ?";
 
         try {
             con = connectDB.getConnection();
@@ -75,7 +77,9 @@ public class OrderDAO {
                 Promotion promotion = promotionDAO.getPromotionByID(rs.getString("promotionID"));
                 String orderStatus = rs.getString("orderStatus");
 
-                return new Order(orderID, orderDate, employee, customer, promotion, orderStatus);
+                Order order = new Order(orderID, orderDate, employee, customer, promotion, orderStatus);
+                order.setTotal(rs.getDouble("total"));
+                return order;
             }
         } catch (SQLException e){
             e.printStackTrace();
@@ -89,11 +93,16 @@ public class OrderDAO {
 
     // Lọc hóa đơn (thanh toán | Chưa thanh toán) (có filter lọc hóa đơn)
     public ArrayList<Order> getAllOrderByStatus(String orderStatus) {
+        if ("Tất cả".equalsIgnoreCase(orderStatus)) {
+            return getAllOrder();
+        }
+
         ArrayList<Order> dsHoaDon = new ArrayList<>();
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        String sql = "select * from Order where orderStatus = ?";
+        String sql = "SELECT orderID, orderDate, total, employeeID, customerID, promotionID, orderStatus "
+                + "FROM [dbo].[Order] WHERE orderStatus = ?";
 
         try {
             con = connectDB.getConnection();
@@ -102,12 +111,15 @@ public class OrderDAO {
             rs = ps.executeQuery();
 
             while(rs.next()){
+                String orderID = rs.getString("orderID");
                 LocalDateTime orderDate = rs.getTimestamp("orderDate").toLocalDateTime();
                 Employee employee = employeeDAO.getEmployeeByID(rs.getString("employeeID"));
                 Customer customer = customerDAO.getCustomerByID(rs.getString("customerID"));
                 Promotion promotion = promotionDAO.getPromotionByID(rs.getString("promotionID"));
 
-                dsHoaDon.add(new Order(orderDate, employee, customer, promotion, orderStatus));
+                Order order = new Order(orderID, orderDate, employee, customer, promotion, orderStatus);
+                order.setTotal(rs.getDouble("total"));
+                dsHoaDon.add(order);
             }
 
             return dsHoaDon;
@@ -134,7 +146,7 @@ public class OrderDAO {
             cs.setString(1, orderID);
             rs = cs.executeQuery();
 
-            if(rs.next()){
+            while(rs.next()){
                 Order order = getOrderByID(orderID);
                 String description = rs.getString("description");
                 RoomType roomType = roomTypeDAO.getRoomTypeByID(rs.getString("roomTypeID"));
@@ -143,7 +155,7 @@ public class OrderDAO {
                 LocalDateTime checkOutDate = rs.getTimestamp("checkOutDate").toLocalDateTime();
                 String bookingType = rs.getString("bookingType");
                 String serviceName = rs.getString("serviceName");
-                int quantity = rs.getInt("quantity");
+                int quantity = rs.getInt("serviceQuantity");
 
                 informations.add(new OrderPay(order, description, roomType, bookingDate, checkInDate, checkOutDate, bookingType, serviceName, quantity)) ;
             }
