@@ -3,10 +3,7 @@ package DAO;
 import Entity.Promotion;
 import connectDB.ConnectDB;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
@@ -89,15 +86,15 @@ public class PromotionDAO {
     public boolean addPromotion(Promotion promotion) {
         Connection con = null;
         PreparedStatement ps = null;
-        String sql = "insert into Promotion values(?,?,?,?,?)";
+        String sql = "insert into Promotion(promotionName, discount, startTime, endTime, quantity) values(?,?,?,?,?)";
 
         try {
             con = connectDB.getConnection();
             ps = con.prepareStatement(sql);
             ps.setString(1, promotion.getPromotionName());
             ps.setDouble(2, promotion.getDiscount());
-            ps.setString(3, promotion.getStartTime().toString());
-            ps.setString(4, promotion.getEndTime().toString());
+            ps.setTimestamp(3, Timestamp.valueOf(promotion.getStartTime()));
+            ps.setTimestamp(4, Timestamp.valueOf(promotion.getEndTime()));
             ps.setInt(5, promotion.getQuantity());
 
             return ps.executeUpdate() > 0;
@@ -120,8 +117,8 @@ public class PromotionDAO {
             ps = con.prepareStatement(sql);
             ps.setString(1, promotion.getPromotionName());
             ps.setDouble(2, promotion.getDiscount());
-            ps.setString(3, promotion.getStartTime().toString());
-            ps.setString(4, promotion.getEndTime().toString());
+            ps.setTimestamp(3, Timestamp.valueOf(promotion.getStartTime()));
+            ps.setTimestamp(4, Timestamp.valueOf(promotion.getEndTime()));
             ps.setString(5, promotion.getPromotionID());
 
             return ps.executeUpdate() > 0;

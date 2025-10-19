@@ -41,9 +41,6 @@ public class Promotion {
     }
 
     public void setPromotionName(String promotionName) {
-        if (promotionName == null || promotionName.trim().isEmpty()) {
-            throw new IllegalArgumentException("TÃªn khuyáº¿n mÃ£i khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
-        }
         this.promotionName = promotionName.trim();
     }
 
@@ -52,9 +49,6 @@ public class Promotion {
     }
 
     public void setDiscount(double discount) {
-        if (discount <= 0) {
-            throw new IllegalArgumentException("Khuyáº¿n mÃ£i pháº£i > 0");
-        }
         this.discount = discount;
     }
 
@@ -63,9 +57,6 @@ public class Promotion {
     }
 
     public void setQuantity(int quantity) {
-        if (quantity <= 0) {
-            throw new IllegalArgumentException("Sá»‘ lÆ°á»£ng khuyáº¿n mÃ£i khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng");
-        }
         this.quantity = quantity;
     }
 
@@ -74,15 +65,7 @@ public class Promotion {
     }
 
     public void setStartTime(LocalDateTime startTime) {
-        if (startTime == null) {
-            throw new IllegalArgumentException("Ä�á»‹nh dáº¡ng khÃ´ng há»£p lá»‡");
-        }
-        if (startTime.isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("Thá»�i gian khÃ´ng há»£p lá»‡ (pháº£i tá»« hiá»‡n táº¡i trá»Ÿ Ä‘i)");
-        }
-        if (this.endTime != null && startTime.isAfter(this.endTime)) {
-            throw new IllegalArgumentException("Thá»�i gian khÃ´ng há»£p lá»‡ (báº¯t Ä‘áº§u pháº£i trÆ°á»›c ngÃ y káº¿t thÃºc)");
-        }
+
         this.startTime = startTime;
     }
 
@@ -91,15 +74,6 @@ public class Promotion {
     }
 
     public void setEndTime(LocalDateTime endTime) {
-        if (endTime == null) {
-            throw new IllegalArgumentException("Ä�á»‹nh dáº¡ng khÃ´ng há»£p lá»‡");
-        }
-        if (endTime.isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("Thá»�i gian khÃ´ng há»£p lá»‡ (pháº£i tá»« hiá»‡n táº¡i trá»Ÿ Ä‘i)");
-        }
-        if (this.startTime != null && endTime.isBefore(this.startTime)) {
-            throw new IllegalArgumentException("Thá»�i gian khÃ´ng há»£p lá»‡ (káº¿t thÃºc pháº£i sau ngÃ y báº¯t Ä‘áº§u)");
-        }
         this.endTime = endTime;
     }
 
