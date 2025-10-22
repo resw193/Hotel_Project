@@ -133,7 +133,9 @@ public class FormCancelBooking extends JPanel {
                     if (u != null) ic = new ImageIcon(u);
                 }
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+
+        }
         if (ic == null) {
             java.net.URL nf = getClass().getResource("/images/404-not-found.jpg");
             if (nf != null) ic = new ImageIcon(nf);
@@ -201,8 +203,21 @@ public class FormCancelBooking extends JPanel {
     private static class Hoverer extends java.awt.event.MouseAdapter {
         private final JButton b;
         private final Color base, hover;
-        Hoverer(JButton b, Color base, Color hover){ this.b=b; this.base=base; this.hover=hover; }
-        @Override public void mouseEntered(java.awt.event.MouseEvent e){ b.setBackground(hover); b.setCursor(new Cursor(Cursor.HAND_CURSOR)); }
-        @Override public void mouseExited (java.awt.event.MouseEvent e){ b.setBackground(base);  b.setCursor(new Cursor(Cursor.DEFAULT_CURSOR)); }
+
+        Hoverer(JButton b, Color base, Color hover){
+            this.b=b;
+            this.base=base;
+            this.hover=hover;
+        }
+
+        @Override public void mouseEntered(java.awt.event.MouseEvent e){
+            b.setBackground(hover);
+            b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        }
+
+        @Override public void mouseExited (java.awt.event.MouseEvent e){
+            b.setBackground(base);
+            b.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        }
     }
 }

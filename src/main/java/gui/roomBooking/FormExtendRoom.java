@@ -24,7 +24,7 @@ public class FormExtendRoom extends JDialog {
     private JTextField txtRoomID, txtOldOut, txtNewOut;
     private JButton btnApply, btnCancel;
 
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 
     public FormExtendRoom(String roomID, FormRoomBookingManagement parent) {
         super((Frame) null, "Gia hạn phòng", true);
