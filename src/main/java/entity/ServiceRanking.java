@@ -1,13 +1,13 @@
 package entity;
 
 
-// Entity này dùng để thống kê dịch vụ đã sử dụng từ startTime -> endTime
+// thống kê dịch vụ đã sử dụng từ startTime -> endTime
 public class ServiceRanking {
     private String serviceName;
-    private double totalQuantity;
+    private int totalQuantity;
     private double totalRevenue;
 
-    public ServiceRanking(String serviceName, double totalQuantity, double totalRevenue) {
+    public ServiceRanking(String serviceName, int totalQuantity, double totalRevenue) {
         this.serviceName = serviceName;
         this.totalQuantity = totalQuantity;
         this.totalRevenue = totalRevenue;
@@ -21,11 +21,11 @@ public class ServiceRanking {
         this.serviceName = serviceName;
     }
 
-    public double getTotalQuantity() {
+    public int getTotalQuantity() {
         return totalQuantity;
     }
 
-    public void setTotalQuantity(double totalQuantity) {
+    public void setTotalQuantity(int totalQuantity) {
         this.totalQuantity = totalQuantity;
     }
 

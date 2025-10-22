@@ -3,10 +3,7 @@ package dao;
 import entity.ServiceRanking;
 import connectDB.ConnectDB;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
@@ -32,8 +29,8 @@ public class ServiceRankingDAO {
         try {
             conn = connectDB.getConnection();
             ps = conn.prepareStatement(sql);
-            ps.setString(1, startTime.toString());
-            ps.setString(2, endTime.toString());
+            ps.setTimestamp(1, Timestamp.valueOf(startTime));
+            ps.setTimestamp(2, Timestamp.valueOf(endTime));
             rs = ps.executeQuery();
 
             while(rs.next()) {
