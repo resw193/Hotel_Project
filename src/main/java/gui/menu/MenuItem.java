@@ -55,15 +55,74 @@ public class MenuItem extends JPanel {
                         menu.runEvent(menuIndex, 0);
                     }
                 });
-            } else {
-                menuItem.setIcon(getSubIcon(menuIndex, i));
+            }
+            else {
+                menuItem.setIcon(getSubIcon(menuIndex, i)); // icon của thống kê
 
-                final int subIndex = i;
-                menuItem.addActionListener((ActionEvent e) -> menu.runEvent(menuIndex, subIndex));
+                int subIndex = i;
+                // Nếu là mục "Thống kê" thuộc nhóm "Khách hàng" (menuIndex = 7)
+                if (menuIndex == 7 && "Thống kê".equalsIgnoreCase(menus[i])) {
+                    // Tạo popup con gồm 3 lựa chọn
+                    final JPopupMenu statsPopup = createStatsPopup();
+
+                    menuItem.addActionListener((ActionEvent e) -> {
+                        // Hiển thị popup lệch sang phải một chút
+                        boolean ltr = getComponentOrientation().isLeftToRight();
+                        int x = ltr ? menuItem.getWidth() - UIScale.scale(8)
+                                : UIScale.scale(8) - statsPopup.getPreferredSize().width;
+                        int y = menuItem.getHeight() / 2;
+                        statsPopup.show(menuItem, x, y);
+                    });
+                }
+                else {
+                    // Các subitem còn lại xử lý như bình thường
+                    menuItem.addActionListener((ActionEvent e) -> menu.runEvent(menuIndex, subIndex));
+                }
             }
             add(menuItem);
         }
         popup = new PopupSubmenu(getComponentOrientation(), menu, menuIndex, menus);
+    }
+
+    // Popup con cho "Thống kê" (Dịch vụ, Hóa đơn, Thu nhập)
+    private JPopupMenu createStatsPopup() {
+        JPopupMenu pm = new JPopupMenu();
+
+        JMenuItem miSvc = new JMenuItem("Dịch vụ",  getNestedIcon("7_3_1"));
+        JMenuItem miBill = new JMenuItem("Hóa đơn",  getNestedIcon("7_3_2"));
+        JMenuItem miIncome = new JMenuItem("Thu nhập", getNestedIcon("7_3_3"));
+
+        // subIndex “tầng 2”: 31, 32, 33 (để MainForm bắt sự kiện)
+        miSvc.addActionListener(e -> menu.runEvent(menuIndex, 31));
+        miBill.addActionListener(e -> menu.runEvent(menuIndex, 32));
+        miIncome.addActionListener(e -> menu.runEvent(menuIndex, 33));
+
+        pm.add(miSvc); pm.add(miBill); pm.add(miIncome);
+        return pm;
+    }
+
+    // Tải icon SVG cho popup con (ưu tiên 7_3_1.svg, fallback 7-3-1.svg)
+    private Icon getNestedIcon(String key) {
+        FlatSVGIcon.ColorFilter gold = new FlatSVGIcon.ColorFilter() {
+            @Override public Color filter(Color c) { return new Color(242, 201, 76, c.getAlpha()); }
+        };
+        String[] candidates = new String[] {
+                "icon/svg/" + key + ".svg",
+                "icon/svg/" + key.replace('_','-') + ".svg"
+        };
+        ClassLoader cl = getClass().getClassLoader();
+        for (String p : candidates) {
+            if (cl.getResource(p) != null) {
+                FlatSVGIcon ic = new FlatSVGIcon(p, 0.60f);
+                ic.setColorFilter(gold);
+                return ic;
+            }
+        }
+
+        // fallback: dùng icon của "Thống kê" cấp 1
+        FlatSVGIcon ic = new FlatSVGIcon("icon/svg/7_3.svg", 0.60f);
+        ic.setColorFilter(gold);
+        return ic;
     }
 
     private Icon getIcon() {

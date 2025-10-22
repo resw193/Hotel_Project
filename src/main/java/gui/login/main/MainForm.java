@@ -30,6 +30,9 @@ import gui.roomBooking.FormCancelBooking;
 import gui.roomBooking.FormRoomBookingManagement;
 import gui.service.FormServiceManagement;
 import gui.statistics.FormThongKe;
+import gui.statistics.order_revenue.FormOrderRevenue;
+import gui.statistics.order_statistics.FormOrderStatistics;
+import gui.statistics.service_statistics.FormServiceStatistics;
 
 public class MainForm extends JLayeredPane {
 
@@ -107,6 +110,9 @@ public class MainForm extends JLayeredPane {
                         case 1 -> Application.showForm(new FormCustomerManagement());
                         case 2 -> Application.showForm(new FormPromotionManagement());
                         case 3 -> Application.showForm(new FormThongKe());
+                        case 31 -> Application.showForm(new FormServiceStatistics());
+                        case 32 -> Application.showForm(new FormOrderStatistics());
+                        case 33 -> Application.showForm(new FormOrderRevenue());
                         default -> action.cancel();
                     }
                 } else if (index == 8) Application.showForm(new FormServiceManagement());
