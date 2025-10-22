@@ -130,7 +130,7 @@ CREATE TABLE Service (
     price MONEY NOT NULL,
     serviceType NVARCHAR(200),
     quantity INT,
-    imgSource VARCHAR(40)
+    imgSource VARCHAR(200)
 );
 GO
 
@@ -188,8 +188,10 @@ CREATE TABLE OrderDetailService (
     quantity INT NOT NULL,
     serviceFee MONEY NOT NULL,
     serviceID CHAR(6) NOT NULL,
+	roomID CHAR(6) NULL,
     CONSTRAINT FK_Order_OrderDetailService FOREIGN KEY (orderID) REFERENCES [Order](orderID) ON DELETE CASCADE,
-    CONSTRAINT FK_Service_OrderDetailService FOREIGN KEY (serviceID) REFERENCES Service(serviceID)
+    CONSTRAINT FK_Service_OrderDetailService FOREIGN KEY (serviceID) REFERENCES Service(serviceID),
+	CONSTRAINT FK_OrderDetailService_Room FOREIGN KEY (roomID) REFERENCES Room(roomID)
 );
 GO
 
@@ -206,7 +208,7 @@ END;
 GO
 
 -- Procedure: Đặt phòng (tạo Order, rồi thêm OrderDetailRoom cho từng phòng)
-CREATE OR ALTER PROCEDURE sp_BookRoom
+CREATE PROCEDURE sp_BookRoom
     @fullName NVARCHAR(100),
     @phone CHAR(10),
     @email VARCHAR(100) = NULL,
@@ -399,7 +401,7 @@ GO
 
 -- Gia hạn phòng (chỉ gia hạn khi status = 'Check-in' và thời gian check-out mới sau khi gia hạn phải > thời gian check-out cũ
 -- Procedure: Gia hạn phòng (chỉ khi đang Check-in), cập nhật checkOutDate và tính lại roomFee
-CREATE OR ALTER PROCEDURE sp_GiaHanPhong
+CREATE PROCEDURE sp_GiaHanPhong
     @roomID          CHAR(6),
     @newCheckOutDate SMALLDATETIME
 AS
@@ -473,7 +475,7 @@ GO
 
 
 -- Procedure: Thanh toán hóa đơn (cập nhật orderStatus = 'Thanh toán')
-CREATE OR ALTER PROCEDURE sp_PayOrder
+CREATE PROCEDURE sp_PayOrder
     @orderID CHAR(8)
 AS
 BEGIN
@@ -544,7 +546,7 @@ GO
 -- Chức năng cập nhật dịch vụ cho phòng đang sử dụng (Khi phòng đã check-in thì mới được thêm dịch vụ vào phòng)
 -- Sử dụng trong Quản lý phòng (mỗi dòng trong table là 1 phòng --> khi click chuột phải vào có nút cập nhật dịch vụ)
 -- Khi cập nhật dịch vụ cho phòng thì --> insert into OrderDetailService và cộng tiền Service (price * quantity (vừa đặt)) vào Total trong Order (không tính lại roomFee)
-CREATE OR ALTER PROCEDURE sp_AddServiceToRoom
+CREATE PROCEDURE sp_AddServiceToRoom
     @roomID CHAR(6),
     @serviceName NVARCHAR(100),
     @quantity INT
@@ -928,7 +930,6 @@ GO
 -- select * from fn_ServiceStats ('2025-08-10', '2025-09-10')
 
 
-
 -- chỉnh sửa thêm cột cho Table Room
 --alter table Room
 --add imgRoomSource varchar(40)
@@ -949,12 +950,12 @@ GO
 --alter table Employee
 --add gender bit
 
-ALTER TABLE OrderDetailService
-ADD roomID CHAR(6) NULL;
+--ALTER TABLE OrderDetailService
+--ADD roomID CHAR(6) NULL;
 
-ALTER TABLE OrderDetailService
-ADD CONSTRAINT FK_OrderDetailService_Room
-FOREIGN KEY (roomID) REFERENCES Room(roomID);
+--ALTER TABLE OrderDetailService
+--ADD CONSTRAINT FK_OrderDetailService_Room
+--FOREIGN KEY (roomID) REFERENCES Room(roomID);
 
 use mimosa_hotel
 select * from Customer
