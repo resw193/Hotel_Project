@@ -10,6 +10,9 @@ import raven.toast.Notifications;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.List;
 
@@ -68,6 +71,22 @@ public class FormServiceManagement extends JPanel {
         scroll.setBorder(null);
         scroll.getVerticalScrollBar().putClientProperty(FlatClientProperties.STYLE,
                 "width:10; background:#0B1F33; track:#0B1F33; thumb:#274A6B; trackArc:999");
+     // ✅ Hỗ trợ cuộn bằng phím lên / xuống (kích hoạt toàn cục)
+     // ✅ Hỗ trợ cuộn bằng phím lên / xuống (vẫn hoạt động sau khi dùng chuột)
+        scroll.getVerticalScrollBar().setUnitIncrement(20);
+
+        // Cho phép scroll bắt phím
+        scroll.setFocusable(true);
+        grid.setFocusable(true);
+
+        // Khi người dùng click hoặc cuộn chuột → scroll lấy lại focus
+        scroll.addMouseWheelListener(e -> scroll.requestFocusInWindow());
+        grid.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                scroll.requestFocusInWindow();
+            }
+        });
         add(scroll, "grow");
 
         // Events
@@ -182,7 +201,7 @@ public class FormServiceManagement extends JPanel {
             });
 
             btnAddQty.addActionListener(e -> {
-                FormUpdateQuantityService formUpdateQuantityService = new FormUpdateQuantityService(FormServiceManagement.this, service);
+                FormUpdateQuantityService formUpdateQuantityService = new FormUpdateQuantityService(service);
                 formUpdateQuantityService.setModal(true);
                 formUpdateQuantityService.setLocationRelativeTo(this);
                 formUpdateQuantityService.setVisible(true);

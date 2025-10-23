@@ -11,61 +11,91 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class FormUpdateQuantityService extends JDialog {
-    private FormServiceManagement parent;
-    private Service currentService;
-
+    private final Service currentService;
     private JTextField txtAdd;
     private JLabel err;
+    private final ServiceBUS serviceBUS = new ServiceBUS();
 
-    private ServiceBUS serviceBUS = new ServiceBUS();
-
-    public FormUpdateQuantityService(FormServiceManagement parent, Service currentService) {
-        this.parent = parent;
+    public FormUpdateQuantityService(Service currentService) {
         this.currentService = currentService;
         initUI();
     }
 
     private void initUI() {
-        setTitle("Add Quantity");
-        setSize(420, 220);
+        setTitle("Thêm số lượng");
+        setSize(420, 240);
+        setResizable(false);
         setLocationRelativeTo(null);
 
-        CrazyPanel p = new CrazyPanel();
-        p.setBorder(new EmptyBorder(14,16,14,16));
-        p.setLayout(new MigLayout("wrap 2, fillx, insets 0, gap 10", "[120::,right]16[fill]"));
+        // Panel chính
+        CrazyPanel mainPanel = new CrazyPanel();
+        mainPanel.setBorder(new EmptyBorder(25, 25, 25, 25));
+        mainPanel.setLayout(new BorderLayout(0, 20));
+        mainPanel.setBackground(Color.GRAY); // nền sáng
 
-        JLabel title = new JLabel("Thêm số lượng cho: " + currentService.getServiceName());
-        title.setFont(title.getFont().deriveFont(Font.BOLD, 16f));
-        p.add(title, "span, al center, gapbottom 8");
+        // Tiêu đề
+        JLabel title = new JLabel("Thêm số lượng cho: " + currentService.getServiceName(), SwingConstants.CENTER);
+        title.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        title.setForeground(new Color(0x333333));
+        mainPanel.add(title, BorderLayout.NORTH);
 
+        // Panel form
+        JPanel formPanel = new JPanel(new MigLayout("wrap 2, fillx, insets 0", "[right][grow]", "[]10[]"));
+        formPanel.setBackground(Color.WHITE);
+
+        JLabel lblQuantity = new JLabel("Số lượng:");
+        lblQuantity.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         txtAdd = new JTextField();
-        p.add(new JLabel("Số lượng")); p.add(txtAdd);
+        txtAdd.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        txtAdd.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(0xCCCCCC), 1),
+                BorderFactory.createEmptyBorder(5, 8, 5, 8)
+        ));
+
+        formPanel.add(lblQuantity);
+        formPanel.add(txtAdd, "growx");
 
         err = new JLabel(" ");
+        err.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         err.setForeground(new Color(0xD64545));
-        p.add(err, "span, growx");
+        formPanel.add(err, "span, growx");
 
-        JButton btnSave = new JButton("Add");
-        btnSave.putClientProperty("JButton.buttonType", "roundRect");
-        p.add(btnSave, "span, al trail");
+        mainPanel.add(formPanel, BorderLayout.CENTER);
 
-        setContentPane(p);
+        // Panel nút
+        JButton btnSave = new JButton("Thêm");
+        btnSave.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        btnSave.setBackground(new Color(0x4CAF50));
+        btnSave.setForeground(Color.WHITE);
+        btnSave.setFocusPainted(false);
+        btnSave.setOpaque(true);
+        btnSave.setBorder(BorderFactory.createEmptyBorder(8, 20, 8, 20));
+        btnSave.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
+        JPanel btnPanel = new JPanel();
+        btnPanel.setBackground(Color.WHITE);
+        btnPanel.add(btnSave);
+        mainPanel.add(btnPanel, BorderLayout.SOUTH);
+
+        setContentPane(mainPanel);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+
+        // Action nút
         btnSave.addActionListener(e -> {
             err.setText(" ");
-            if (!txtAdd.getText().trim().matches("^\\d+$")) {
+            String input = txtAdd.getText().trim();
+            if (!input.matches("^\\d+$")) {
                 err.setText("Số lượng thêm phải là số");
                 return;
             }
-            int added = Integer.parseInt(txtAdd.getText().trim());
+            int added = Integer.parseInt(input);
 
             try {
                 if (serviceBUS.increaseQuantity(currentService.getServiceID(), added)) {
                     Notifications.getInstance().show(Notifications.Type.INFO, Notifications.Location.BOTTOM_LEFT, "Quantity updated");
                     dispose();
-                    parent.loadData();
                 } else {
-                    err.setText("Failed to update quantity.");
+                    err.setText("Cập nhật thất bại.");
                 }
             } catch (Exception ex) {
                 err.setText(ex.getMessage());
