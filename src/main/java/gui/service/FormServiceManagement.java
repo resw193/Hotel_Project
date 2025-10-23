@@ -201,7 +201,7 @@ public class FormServiceManagement extends JPanel {
             });
 
             btnAddQty.addActionListener(e -> {
-                FormUpdateQuantityService formUpdateQuantityService = new FormUpdateQuantityService(service);
+                FormUpdateQuantityService formUpdateQuantityService = new FormUpdateQuantityService(FormServiceManagement.this, service);
                 formUpdateQuantityService.setModal(true);
                 formUpdateQuantityService.setLocationRelativeTo(this);
                 formUpdateQuantityService.setVisible(true);
