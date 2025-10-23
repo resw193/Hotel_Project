@@ -6,47 +6,42 @@ import connectDB.ConnectDB;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 
 public class ServiceRankingDAO {
-    private ConnectDB connectDB;
+    private final ConnectDB connectDB;
 
     public ServiceRankingDAO() {
         connectDB = ConnectDB.getInstance();
         connectDB.connect();
     }
 
-    // Sử dụng JDateChooser
-    // Thống kê dịch vụ sử dụng trong khoảng thời gian (start,end) --> trả về (serviceName, TotalQuantity, TotalRevenue)
-    // Trong giao diện thống kê sẽ có 2 lịch (lịch trái chọn startTime, lịch phải chọn endTime) và cho lắng nghe sự kiện sau khi chọn xong thì table dạng cột
-    // table dạng cột sẽ hiển thị các cột : ServiceName | TotalQuantity | TotalRevenue
-    public ArrayList<ServiceRanking> thongKeDichVuTheoThoiGian(LocalDateTime startTime, LocalDateTime endTime) {
-        ArrayList<ServiceRanking> serviceRankings = new ArrayList<>();
-        Connection conn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        String sql = "select * from fn_ServiceStats(?, ?) order by TotalRevenue desc"; // sắp xếp giảm dần để quan sát
+    // Thống kê dịch vụ sử dụng trong khoảng thời gian, sắp xếp giảm dần theo doanh thu
+    public List<ServiceRanking> thongKeDichVuTheoThoiGian(LocalDateTime startTime, LocalDateTime endTime) {
+        String sql = "SELECT * FROM fn_ServiceStats(?, ?) ORDER BY TotalRevenue DESC";
+        List<ServiceRanking> serviceRankings = new ArrayList<>();
 
-        try {
-            conn = connectDB.getConnection();
-            ps = conn.prepareStatement(sql);
+        try (Connection conn = connectDB.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setTimestamp(1, Timestamp.valueOf(startTime));
             ps.setTimestamp(2, Timestamp.valueOf(endTime));
-            rs = ps.executeQuery();
 
-            while(rs.next()) {
-                String serviceName = rs.getString("serviceName");
-                int totalQuantity = rs.getInt("TotalQuantity");
-                double totalRevenue = rs.getDouble("TotalRevenue");
-
-                serviceRankings.add(new ServiceRanking(serviceName, totalQuantity, totalRevenue));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    serviceRankings.add(new ServiceRanking(
+                            rs.getString("serviceName"),
+                            rs.getInt("TotalQuantity"),
+                            rs.getDouble("TotalRevenue")
+                    ));
+                }
             }
 
-            return serviceRankings;
-        } catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
             return null;
-        } finally {
-            connectDB.close(ps, null);
         }
+
+        return serviceRankings;
     }
 }
