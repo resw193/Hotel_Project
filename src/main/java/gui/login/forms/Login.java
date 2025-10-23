@@ -35,13 +35,13 @@ public class Login extends JPanel {
         setOpaque(false);
         setLayout(new MigLayout("wrap,fillx,insets 45 45 50 45", "[fill]"));
 
-        JLabel title = new JLabel("Login to your account", SwingConstants.CENTER);
+        JLabel title = new JLabel("Đăng nhập tài khoản của bạn", SwingConstants.CENTER);
         txtUsername = new JTextField();
         txtPassword = new JPasswordField();
 
-        JCheckBox chRememberMe = new JCheckBox("Remember me");
-        cmdForgot = new JButton("Forgot password?");
-        cmdLogin = new JButton("Login");
+        JCheckBox chRememberMe = new JCheckBox("Nhớ tài khoản");
+        cmdForgot = new JButton("Quên mật khẩu?");
+        cmdLogin = new JButton("Đăng nhập");
 
         title.putClientProperty(FlatClientProperties.STYLE, "font:bold +10");
 
@@ -56,13 +56,13 @@ public class Login extends JPanel {
         cmdForgot.putClientProperty(FlatClientProperties.STYLE,
                 "borderWidth:0;focusWidth:0;innerFocusWidth:0;foreground:$Component.accentColor");
 
-        txtUsername.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Enter your username");
-        txtPassword.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Enter your password");
+        txtUsername.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập tên đăng nhập");
+        txtPassword.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập mật khẩu");
 
         add(title);
-        add(new JLabel("Username"), "gapy 20");
+        add(new JLabel("Tên đăng nhập"), "gapy 20");
         add(txtUsername);
-        add(new JLabel("Password"), "gapy 10");
+        add(new JLabel("Mật khẩu"), "gapy 10");
         add(txtPassword);
 
         // emember (trái) - Forgot (phải)
