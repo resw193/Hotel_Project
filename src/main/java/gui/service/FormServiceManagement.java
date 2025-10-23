@@ -56,7 +56,7 @@ public class FormServiceManagement extends JPanel {
         };
         FlatSVGIcon addTopIcon = new FlatSVGIcon("icon/svg/add.svg", 0.35f);
         addTopIcon.setColorFilter(goldFilter);
-        btnAddNew = new JButton("Add New", addTopIcon);
+        btnAddNew = new JButton("ADD NEW", addTopIcon);
         stylePrimary(btnAddNew);
         top.add(btnAddNew, "w 120!");
 

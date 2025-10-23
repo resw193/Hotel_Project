@@ -102,7 +102,7 @@ public class FormAddService extends JDialog {
                     parent.loadData();
                 }
                 else {
-                    err.setText("Failed to add service.");
+                    err.setText("Fail to add service.");
                 }
             } catch (Exception ex) {
                 err.setText(ex.getMessage());
