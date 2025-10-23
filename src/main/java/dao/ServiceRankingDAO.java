@@ -49,4 +49,4 @@ public class ServiceRankingDAO {
             connectDB.close(ps, null);
         }
     }
-}
+}  
