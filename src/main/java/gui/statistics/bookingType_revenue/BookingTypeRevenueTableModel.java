@@ -6,6 +6,7 @@ import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.Locale;
 
+//
 public class BookingTypeRevenueTableModel extends AbstractTableModel {
     private String[] cols = {"STT", "Kiểu đặt phòng", "Số lượt đặt", "Doanh thu phòng"};
     private ArrayList<BookingTypeRevenue> list = new ArrayList<>();

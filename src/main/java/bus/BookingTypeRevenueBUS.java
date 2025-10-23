@@ -6,6 +6,7 @@ import entity.BookingTypeRevenue;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
+//
 public class BookingTypeRevenueBUS {
     private BookingTypeRevenueDAO bookingTypeRevenueDAO = new BookingTypeRevenueDAO();
 

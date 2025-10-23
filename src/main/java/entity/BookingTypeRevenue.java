@@ -1,5 +1,6 @@
 package entity;
 
+//
 public class BookingTypeRevenue {
     private String bookingType;
     private int soLuot;

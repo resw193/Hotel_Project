@@ -134,7 +134,7 @@ public class FormBookingTypeRevenueStats extends JPanel {
         dcEnd.getDateEditor().addPropertyChangeListener(pcl);
         btnReload.addActionListener(e -> load());
 
-        // First load
+        // load
         load();
     }
 
