@@ -51,16 +51,16 @@ public class Home extends JPanel {
 
     private void testData() {
         locations = new ArrayList<>();
-        locations.add(new ModelLocation("Serendipity Cove\nRetreat",
-                "Serendipity Cove Retreat is a secluded haven nestled amidst untouched nature. Surrounded by lush forests, cascading waterfalls, and serene lakes, this enchanting retreat offers a tranquil escape for those seeking solace and rejuvenation. With rustic cabins, modern amenities, and breathtaking views, Serendipity Cove Retreat promises a unique and unforgettable experience in the heart of nature.",
+        locations.add(new ModelLocation("KHÁCH SẠN MIMOSA",
+                "Khách sạn MIMOSA tọa lạc tại vị trí lý tưởng ven biển, mang đến cho du khách không gian nghỉ dưỡng sang trọng cùng tầm nhìn hướng ra bãi biển tuyệt đẹp, nơi bạn có thể tận hưởng trọn vẹn vẻ đẹp của biển xanh và nắng vàng.",
                 "/video/video 1.mp4"));
 
-        locations.add(new ModelLocation("Whispering Pines\nRetreat",
-                "Nestled in a serene forest, Whispering Pines Retreat is a peaceful haven surrounded by towering trees and breathtaking landscapes. This tranquil getaway offers a chance to reconnect with nature, unwind, and find inner peace. With cozy cabins, stunning views, and a soothing atmosphere, Whispering Pines Retreat is the perfect destination for relaxation and rejuvenation.",
+        locations.add(new ModelLocation("Lời thì thầm từ những con sóng",
+                "Chỉ cách bãi biển vài bước chân, MIMOSA Hotel là điểm dừng chân lý tưởng cho những ai muốn đắm mình trong làn gió biển mát lành và chiêm ngưỡng khung cảnh hoàng hôn lãng mạn ngay từ ban công phòng nghỉ.",
                 "/video/video 2.mp4"));
 
-        locations.add(new ModelLocation("Serenity Cove\nResort",
-                "Situated on the serene shores of a crystal-clear lake, Serenity Cove Resort is a picturesque haven that offers a perfect blend of relaxation and adventure. With luxurious accommodations, breathtaking views, and a wide range of recreational activities, this idyllic retreat provides an escape from the ordinary. Whether you're seeking tranquility by the water, exploring nature trails, or indulging in spa treatments, Serenity Cove Resort promises an unforgettable experience that rejuvenates the mind, body, and soul.",
+        locations.add(new ModelLocation("Khung cảnh nên thơ",
+                "Đến với MIMOSA Hotel, bạn sẽ được thư giãn trong không gian ấm cúng, tận hưởng view biển thơ mộng và trải nghiệm kỳ nghỉ đáng nhớ bên bờ sóng xanh.",
                 "/video/video 3.mp4"));
     }
 

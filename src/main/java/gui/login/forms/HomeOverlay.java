@@ -147,25 +147,24 @@ public class HomeOverlay extends JWindow {
         private void createHeader() {
             header = new JPanel(new MigLayout("fill", "[]push[][]"));
             header.setOpaque(false);
+
             JLabel title = new JLabel("MIMOSA");
             title.putClientProperty(FlatClientProperties.STYLE, "" +
                     "font:bold +10");
-            HeaderButton home = new HeaderButton("Home");
+
+            // Chỉ giữ lại nút About và Login
             HeaderButton about = new HeaderButton("About");
-            HeaderButton explore = new HeaderButton("Explore");
             HeaderButton login = new HeaderButton("Login");
 
-            login.addActionListener(e -> {
-                runLoginAnimation(true);
-            });
+            // Sự kiện khi nhấn Login
+            login.addActionListener(e -> runLoginAnimation(true));
 
             header.add(title);
-            header.add(home);
             header.add(about);
-            header.add(explore);
             header.add(login);
             add(header, "wrap");
         }
+
 
         private void createLogin() {
             panelLogin = new Login();
