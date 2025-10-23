@@ -16,126 +16,190 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 public class FormAddService extends JDialog {
-    private FormServiceManagement parent;
 
-    private JTextField txtName, txtPrice, txtQty;
-    private JComboBox<String> cboType;
-    private JLabel lblPreview, err;
-
+    private final FormServiceManagement parent;
+    private final JTextField txtName, txtPrice, txtQty;
+    private final JComboBox<String> cboType;
+    private final JLabel lblPreview, err;
     private File fileChosen;
+    private final ServiceBUS serviceBUS = new ServiceBUS();
 
-    private ServiceBUS serviceBUS = new ServiceBUS();
+    private static final Color BG = new Color(0x0B1F33);
+    private static final Color CARD_BG = new Color(0x13385A);
+    private static final Color TEXT_PRIMARY = new Color(0xE9EEF6);
+    private static final Color GOLD_PRIMARY = new Color(0xF5C452);
+    private static final Color ERROR_RED = new Color(0xD64545);
 
     public FormAddService(FormServiceManagement parent) {
         this.parent = parent;
+        setTitle("Add New Service");
+        setModal(true);
+        setSize(620, 660);
+        setLocationRelativeTo(parent);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setResizable(false);
 
-        initGUI();
-    }
+        CrazyPanel panel = new CrazyPanel();
+        panel.setLayout(new MigLayout(
+                "wrap 2, fillx, insets 20 30 20 30, gap 12",
+                "[140::,right]20[fill, grow]"
+        ));
+        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        panel.setBackground(CARD_BG);
 
-    private void initGUI() {
-        setTitle("Add Service");
-        setSize(560, 520);
-        setLocationRelativeTo(null);
+        JLabel lblTitle = new JLabel("Add New Service", SwingConstants.CENTER);
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        lblTitle.setForeground(Color.WHITE);
+        panel.add(lblTitle, "span, al center, gaptop 4, gapbottom 15");
 
-        CrazyPanel p = new CrazyPanel();
-        p.setBorder(new EmptyBorder(14,16,14,16));
-        p.setLayout(new MigLayout("wrap 2, fillx, insets 0, gap 10", "[120::,right]16[fill]"));
+        lblPreview = new JLabel("No image", SwingConstants.CENTER);
+        lblPreview.setPreferredSize(new Dimension(160, 160));
+        lblPreview.setOpaque(true);
+        lblPreview.setBackground(new Color(0x102C49));
+        lblPreview.setForeground(TEXT_PRIMARY);
+        lblPreview.setBorder(BorderFactory.createDashedBorder(new Color(0x355C7D)));
 
-        JLabel title = new JLabel("Add New Service");
-        title.setFont(title.getFont().deriveFont(Font.BOLD, 18f));
-        p.add(title, "span, al center, gapbottom 8");
+        JButton btnChooseImage = new JButton(" Chọn ảnh");
+        styleButton(btnChooseImage, GOLD_PRIMARY, BG);
 
-        lblPreview = new JLabel();
-        lblPreview.setPreferredSize(new Dimension(140,140));
-        lblPreview.setHorizontalAlignment(SwingConstants.CENTER);
-        lblPreview.setBorder(BorderFactory.createDashedBorder(new Color(0x274A6B)));
-        JButton btnChooseImage = new JButton("Chọn ảnh");
-        p.add(new JLabel("Hình ảnh"), "gapbottom 6");
-        p.add(lblPreview, "wrap, h 140!");
-        p.add(new JLabel(""));
-        p.add(btnChooseImage, "wrap");
+        panel.add(new JLabel("Hình ảnh:"), "gapbottom 4");
+        panel.add(lblPreview, "wrap, h 160!, al center");
+        panel.add(new JLabel(""));
+        panel.add(btnChooseImage, "wrap, al center");
 
         txtName = new JTextField();
-        cboType = new JComboBox<>(new String[]{"Food","Drink"});
         txtPrice = new JTextField();
         txtQty = new JTextField();
+        cboType = new JComboBox<>(new String[]{"Food", "Drink"});
 
-        p.add(new JLabel("Tên dịch vụ"));   p.add(txtName);
-        p.add(new JLabel("Loại dịch vụ"));   p.add(cboType);
-        p.add(new JLabel("Giá"));  p.add(txtPrice);
-        p.add(new JLabel("Số lượng")); p.add(txtQty);
+        styleField(txtName);
+        styleField(txtPrice);
+        styleField(txtQty);
+        styleCombo(cboType);
 
+        addLabeledField(panel, "Tên dịch vụ:", txtName);
+        addLabeledField(panel, "Loại dịch vụ:", cboType);
+        addLabeledField(panel, "Giá (VND):", txtPrice);
+        addLabeledField(panel, "Số lượng:", txtQty);
+
+        // === ERROR LABEL ===
         err = new JLabel(" ");
-        err.setForeground(new Color(0xD64545));
-        p.add(err, "span, growx");
+        err.setForeground(ERROR_RED);
+        panel.add(err, "span, growx, gaptop 6");
 
-        JButton btnAdd = new JButton("Add");
-        btnAdd.putClientProperty("JButton.buttonType", "roundRect");
-        p.add(btnAdd, "span, al trail");
+        // === BUTTONS ===
+        JButton btnAdd = new JButton("Thêm dịch vụ");
+        JButton btnCancel = new JButton("Hủy");
 
-        setContentPane(p);
+        styleButton(btnAdd, GOLD_PRIMARY, BG);
+        styleButton(btnCancel, ERROR_RED, Color.WHITE);
 
-        btnChooseImage.addActionListener(e -> {
-            JFileChooser fc = new JFileChooser();
-            fc.setFileFilter(new FileNameExtensionFilter("Images","jpg","png","jpeg","gif","bmp"));
-            if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-                fileChosen = fc.getSelectedFile();
-                Image img = new ImageIcon(fileChosen.getAbsolutePath()).getImage();
-                lblPreview.setIcon(new ImageIcon(img.getScaledInstance(140, 140, Image.SCALE_SMOOTH)));
-            }
-        });
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 6));
+        btnPanel.setOpaque(false);
+        btnPanel.add(btnAdd);
+        btnPanel.add(btnCancel);
 
-        btnAdd.addActionListener(e -> {
-            if (!validData()) return;
-            try {
-                File toSave = copyToResourcesImages(fileChosen);
-                boolean ok = serviceBUS.add(txtName.getText().trim(),
-                        String.valueOf(cboType.getSelectedItem()),
-                        Integer.parseInt(txtQty.getText().trim()),
-                        Double.parseDouble(txtPrice.getText().trim()),
-                        toSave
+        panel.add(btnPanel, "span, al center, gaptop 15, wrap");
+
+        setContentPane(panel);
+
+        btnChooseImage.addActionListener(e -> chooseImage());
+        btnCancel.addActionListener(e -> dispose());
+        btnAdd.addActionListener(e -> handleAdd());
+    }
+
+    private void addLabeledField(JPanel panel, String label, JComponent field) {
+        JLabel lbl = new JLabel(label);
+        lbl.setForeground(TEXT_PRIMARY);
+        panel.add(lbl, "gapbottom 4");
+        panel.add(field, "wrap");
+    }
+
+    private void styleField(JTextField field) {
+        field.setBackground(new Color(0x102C49));
+        field.setForeground(TEXT_PRIMARY);
+        field.setCaretColor(GOLD_PRIMARY);
+        field.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(0x274A6B)),
+                new EmptyBorder(6, 8, 6, 8)
+        ));
+    }
+
+    private void styleCombo(JComboBox<?> combo) {
+        combo.setBackground(new Color(0x102C49));
+        combo.setForeground(TEXT_PRIMARY);
+        combo.setBorder(BorderFactory.createLineBorder(new Color(0x274A6B)));
+    }
+
+    private void styleButton(JButton btn, Color bg, Color fg) {
+        btn.setBackground(bg);
+        btn.setForeground(fg);
+        btn.setFocusPainted(false);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btn.setBorder(BorderFactory.createEmptyBorder(8, 16, 8, 16));
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btn.setOpaque(true);
+    }
+
+    private void chooseImage() {
+        JFileChooser fc = new JFileChooser();
+        fc.setFileFilter(new FileNameExtensionFilter("Images", "jpg", "jpeg", "png", "gif", "bmp"));
+        if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            fileChosen = fc.getSelectedFile();
+            Image img = new ImageIcon(fileChosen.getAbsolutePath()).getImage();
+            lblPreview.setText("");
+            lblPreview.setIcon(new ImageIcon(img.getScaledInstance(160, 160, Image.SCALE_SMOOTH)));
+        }
+    }
+
+    private void handleAdd() {
+        if (!validData()) return;
+        try {
+            File toSave = copyToResourcesImages(fileChosen);
+            boolean ok = serviceBUS.add(
+                    txtName.getText().trim(),
+                    (String) cboType.getSelectedItem(),
+                    Integer.parseInt(txtQty.getText().trim()),
+                    Double.parseDouble(txtPrice.getText().trim()),
+                    toSave
+            );
+            if (ok) {
+                Notifications.getInstance().show(
+                        Notifications.Type.SUCCESS,
+                        Notifications.Location.BOTTOM_LEFT,
+                        "Thêm dịch vụ thành công!"
                 );
-
-                if (ok) {
-                    Notifications.getInstance().show(Notifications.Type.INFO, Notifications.Location.BOTTOM_LEFT, "Added");
-                    dispose();
-                    parent.loadData();
-                }
-                else {
-                    err.setText("Fail to add service.");
-                }
-            } catch (Exception ex) {
-                err.setText(ex.getMessage());
+                parent.loadData();
+                dispose();
+            } else {
+                err.setText("Không thể thêm dịch vụ. Vui lòng thử lại.");
             }
-        });
+        } catch (Exception ex) {
+            err.setText("Lỗi: " + ex.getMessage());
+        }
     }
 
     private boolean validData() {
         err.setText(" ");
         if (txtName.getText().trim().isEmpty()) {
-            err.setText("Tên service không được để trống");
+            err.setText("Tên dịch vụ không được để trống");
             return false;
         }
-
         if (!txtPrice.getText().trim().matches("^[0-9]+(\\.[0-9]+)?$")) {
-            err.setText("Giá phải là số");
+            err.setText("Giá phải là số hợp lệ");
             return false;
         }
-
         if (!txtQty.getText().trim().matches("^\\d+$")) {
-            err.setText("Số lượng phải là số");
+            err.setText("Số lượng phải là số nguyên");
             return false;
         }
-
         if (fileChosen == null) {
-            err.setText("Ảnh không đc trống");
+            err.setText("Vui lòng chọn ảnh minh họa");
             return false;
         }
-
         return true;
     }
 
-    // Copy ảnh vào thư mục resources/images (hoặc target/classes/images khi chạy)
     private File copyToResourcesImages(File src) {
         try {
             java.net.URL u = getClass().getResource("/images/");
@@ -143,7 +207,6 @@ public class FormAddService extends JDialog {
             if (u != null && "file".equalsIgnoreCase(u.getProtocol())) {
                 destDir = Paths.get(u.toURI());
             } else {
-                // /src/main/resources/images
                 destDir = Paths.get("src", "main", "resources", "images");
             }
             Files.createDirectories(destDir);
