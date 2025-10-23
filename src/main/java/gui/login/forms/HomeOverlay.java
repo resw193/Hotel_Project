@@ -74,7 +74,6 @@ public class HomeOverlay extends JWindow {
             panel.setOpaque(false);
             textTitle = new JTextPane();
             textDescription = new JTextPane();
-            cmdReadMore = new JButton("Read More");
             textTitle.setOpaque(false);
             textTitle.setEditable(false);
             textTitle.putClientProperty(FlatClientProperties.STYLE, "" +
@@ -86,16 +85,8 @@ public class HomeOverlay extends JWindow {
             textDescription.putClientProperty(FlatClientProperties.STYLE, "" +
                     "font:bold +2;" +
                     "border:0,0,0,0");
-            cmdReadMore.putClientProperty(FlatClientProperties.STYLE, "" +
-                    "background:$Component.accentColor;" +
-                    "borderWidth:0;" +
-                    "margin:5,15,5,15;" +
-                    "focusWidth:0;" +
-                    "innerFocusWidth:0;" +
-                    "arc:999");
             panel.add(textTitle);
             panel.add(textDescription);
-            panel.add(cmdReadMore);
             add(panel, "width 50%!");
             addMouseListener(new MouseAdapter() {
                 @Override
@@ -153,8 +144,8 @@ public class HomeOverlay extends JWindow {
                     "font:bold +10");
 
             // Chỉ giữ lại nút About và Login
-            HeaderButton about = new HeaderButton("About");
-            HeaderButton login = new HeaderButton("Login");
+            HeaderButton about = new HeaderButton("VỀ CHÚNG TÔI");
+            HeaderButton login = new HeaderButton("ĐĂNG NHẬP");
 
             // Sự kiện khi nhấn Login
             login.addActionListener(e -> runLoginAnimation(true));
@@ -268,7 +259,6 @@ public class HomeOverlay extends JWindow {
         private JPanel header;
         private JTextPane textTitle;
         private JTextPane textDescription;
-        private JButton cmdReadMore;
         private Login panelLogin;
     }
 
