@@ -49,6 +49,7 @@ public class ServiceDAO {
             connectDB.close(ps, rs);
         }
     }
+
     // Lấy ra sản phẩm theo ID
     public Service getServiceByID(String serviceID) {
         Connection conn = null;
@@ -80,6 +81,39 @@ public class ServiceDAO {
 
         return null;
     }
+
+    // Lấy ra service theo name
+    public Service getByName(String name) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        String sql = "select * from Service where serviceName = ?";
+
+        try {
+            conn = connectDB.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, name);
+            rs = ps.executeQuery();
+
+            if(rs.next()) {
+                String serviceID = rs.getString("serviceID");
+                double price = rs.getDouble("price");
+                String serviceType = rs.getString("serviceType");
+                int quantity = rs.getInt("quantity");
+                String imgSource = rs.getString("imgSource");
+
+                return new Service(serviceID, name, serviceType, quantity, price, imgSource);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            connectDB.close(ps, rs);
+        }
+
+        return null;
+    }
+
 
     // Lấy ra sản phẩm theo loại (Food | Drink) --> Lọc theo drink hoặc food
     public ArrayList<Service> getAllServiceByType(String serviceType){

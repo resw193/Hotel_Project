@@ -32,6 +32,10 @@ public class ServiceBUS {
         return serviceDAO.getServiceByID(id);
     }
 
+    public Service getByName(String name)   {
+        return serviceDAO.getByName(name);
+    }
+
     // Thêm service mới (ko valid data truoc khi add)
     public boolean add(String name, String type, int qty, double price, File imageFile) {
         if (imageFile == null) throw new IllegalArgumentException("Vui lòng chọn ảnh dịch vụ.");
