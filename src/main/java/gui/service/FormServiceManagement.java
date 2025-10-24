@@ -49,7 +49,7 @@ public class FormServiceManagement extends JPanel {
         title.setFont(title.getFont().deriveFont(Font.BOLD, 18f));
         top.add(title, "left");
 
-        cboFilter = new JComboBox<>(new String[]{"All", "Food", "Drink"});
+        cboFilter = new JComboBox<>(new String[]{"All", "Food", "Drink", "Laundry"});
         cboFilter.putClientProperty(FlatClientProperties.STYLE,
                 "arc:12; background:#102D4A; foreground:#E9EEF6; borderColor:#274A6B; padding:6,12,6,12");
         top.add(cboFilter, "w 150!");
@@ -71,8 +71,9 @@ public class FormServiceManagement extends JPanel {
         scroll.setBorder(null);
         scroll.getVerticalScrollBar().putClientProperty(FlatClientProperties.STYLE,
                 "width:10; background:#0B1F33; track:#0B1F33; thumb:#274A6B; trackArc:999");
-     // ✅ Hỗ trợ cuộn bằng phím lên / xuống (kích hoạt toàn cục)
-     // ✅ Hỗ trợ cuộn bằng phím lên / xuống (vẫn hoạt động sau khi dùng chuột)
+
+        // Hỗ trợ cuộn bằng phím lên / xuống (kích hoạt toàn cục)
+        // Hỗ trợ cuộn bằng phím lên / xuống (vẫn hoạt động sau khi dùng chuột)
         scroll.getVerticalScrollBar().setUnitIncrement(20);
 
         // Cho phép scroll bắt phím
@@ -107,9 +108,10 @@ public class FormServiceManagement extends JPanel {
         String selected = String.valueOf(cboFilter.getSelectedItem());
 
         List<Service> data = switch (selected) {
-            case "Food"  -> serviceBUS.getByType("Food");
-            case "Drink" -> serviceBUS.getByType("Drink");
-            default      -> serviceBUS.getAll();
+            case "Food"    -> serviceBUS.getByType("Food");
+            case "Drink"   -> serviceBUS.getByType("Drink");
+            case "Laundry" -> serviceBUS.getByType("Laundry");
+            default        -> serviceBUS.getAll();
         };
 
         LoadDataToDisplay(data);

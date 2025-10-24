@@ -70,7 +70,7 @@ public class FormAddService extends JDialog {
         txtName = new JTextField();
         txtPrice = new JTextField();
         txtQty = new JTextField();
-        cboType = new JComboBox<>(new String[]{"Food", "Drink"});
+        cboType = new JComboBox<>(new String[]{"Food", "Drink", "Laundry"});
 
         styleField(txtName);
         styleField(txtPrice);
