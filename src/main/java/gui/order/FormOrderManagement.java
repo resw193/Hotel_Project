@@ -186,9 +186,9 @@ public class FormOrderManagement extends JPanel {
         }
     }
 
-    private void showDetail(Order o) {
+    private void showDetail(Order order) {
         detailPanel.removeAll();
-        if (o == null) {
+        if (order == null) {
             detailPanel.revalidate(); detailPanel.repaint();
             return;
         }
@@ -201,16 +201,16 @@ public class FormOrderManagement extends JPanel {
 
         // thông tin hóa đơn
         JPanel header = titledCard("Thông tin hóa đơn");
-        header.add(label("Mã hóa đơn: ", o.getOrderID(), true));
-        header.add(label("Ngày lập: ", (o.getOrderDate() == null ? "" : formatter.format(o.getOrderDate())), false));
-        header.add(label("Nhân viên: ", (o.getEmployee() == null ? "" : o.getEmployee().getFullName()), false));
-        String kh = (o.getCustomer() == null ? "" : o.getCustomer().getFullName());
-        String phone = (o.getCustomer() == null ? "" : o.getCustomer().getPhone());
+        header.add(label("Mã hóa đơn: ", order.getOrderID(), true));
+        header.add(label("Ngày lập: ", (order.getOrderDate() == null ? "" : formatter.format(order.getOrderDate())), false));
+        header.add(label("Nhân viên: ", (order.getEmployee() == null ? "" : order.getEmployee().getFullName()), false));
+        String kh = (order.getCustomer() == null ? "" : order.getCustomer().getFullName());
+        String phone = (order.getCustomer() == null ? "" : order.getCustomer().getPhone());
         header.add(label("Khách hàng: ", kh + (isBlank(phone) ? "" :" ("+phone+")"), false));
         root.add(header);
 
         // Danh sách chi tiết phòng (OrderDetailRoom)
-        List<OrderDetailRoom> roomLines = orderDetailRoomBUS.getbyOrderID(o.getOrderID());
+        List<OrderDetailRoom> roomLines = orderDetailRoomBUS.getbyOrderID(order.getOrderID());
         JPanel pRooms = titledCard("Các phòng đã đặt");
         if (roomLines != null && !roomLines.isEmpty()) {
             for (OrderDetailRoom r : roomLines) {
@@ -232,7 +232,7 @@ public class FormOrderManagement extends JPanel {
         root.add(pRooms);
 
         // Dịch vụ đã sử dụng
-        List<OrderDetailService> svLines = orderDetailServiceBUS.getbyOrderID(o.getOrderID());
+        List<OrderDetailService> svLines = orderDetailServiceBUS.getbyOrderID(order.getOrderID());
         JPanel pSvc = titledCard("Dịch vụ đã sử dụng");
         if (svLines != null && !svLines.isEmpty()) {
             Map<String, Integer> agg = svLines.stream()
@@ -251,12 +251,12 @@ public class FormOrderManagement extends JPanel {
         footer.setLayout(new MigLayout("insets 8, gap 10", "[grow][280!]", "[][][]push[]"));
 
         // Tính tiền
-        double total = o.getTotal();
+        double total = order.getTotal();
         double vat = total * 0.10;
-        double discountRate = (o.getPromotion() == null) ? 0D : (o.getPromotion().getDiscount() / 100.0);
-        String promoTxt = (o.getPromotion() == null) ? "Không có" : ((int)o.getPromotion().getDiscount()) + "%";
+        double discountRate = (order.getPromotion() == null) ? 0D : (order.getPromotion().getDiscount() / 100.0);
+        String promoTxt = (order.getPromotion() == null) ? "Không có" : ((int)order.getPromotion().getDiscount()) + "%";
         double amountDue = total + vat - (total * discountRate);
-        boolean paidStatus = "Thanh toán".equalsIgnoreCase(o.getOrderStatus());
+        boolean paidStatus = "Thanh toán".equalsIgnoreCase(order.getOrderStatus());
         double uiDue = paidStatus ? 0d : amountDue;   // nêếu đã thanh toán thì tiền trong máy sẽ = 0
 
         // thông tin tiền phải trả
@@ -357,7 +357,7 @@ public class FormOrderManagement extends JPanel {
                 if (opt != JOptionPane.YES_OPTION) return;
             }
             try {
-                orderBUS.payOrder(o.getOrderID());
+                orderBUS.payOrder(order.getOrderID());
                 JOptionPane.showMessageDialog(this, "Thanh toán thành công!");
                 reloadData();
             } catch (Exception ex) {
@@ -367,15 +367,15 @@ public class FormOrderManagement extends JPanel {
         });
 
         btnPrint.addActionListener(e -> {
-            if (!"Thanh toán".equalsIgnoreCase(o.getOrderStatus())) {
+            if (!"Thanh toán".equalsIgnoreCase(order.getOrderStatus())) {
                 JOptionPane.showMessageDialog(this, "Hóa đơn chưa thanh toán, vui lòng thanh toán trước.");
                 return;
             }
-            ArrayList<OrderDetailRoom> rooms = orderDetailRoomBUS.getbyOrderID(o.getOrderID());
-            ArrayList<OrderDetailService> services = orderDetailServiceBUS.getbyOrderID(o.getOrderID());
+            ArrayList<OrderDetailRoom> rooms = orderDetailRoomBUS.getbyOrderID(order.getOrderID());
+            ArrayList<OrderDetailService> services = orderDetailServiceBUS.getbyOrderID(order.getOrderID());
 
             Window owner = SwingUtilities.getWindowAncestor(this);
-            new FormPayOrder(owner, o, rooms, services, QR_IMAGE_PATH).setVisible(true);
+            new FormPayOrder(owner, order, rooms, services, QR_IMAGE_PATH).setVisible(true);
         });
 
         detailPanel.add(root, BorderLayout.CENTER);
