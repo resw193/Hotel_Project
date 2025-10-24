@@ -199,7 +199,7 @@ public class FormOrderManagement extends JPanel {
         root.setOpaque(true);
         root.setBackground(BG);
 
-        // thông tin hóa đơn
+        // Thông tin hóa đơn
         JPanel header = titledCard("Thông tin hóa đơn");
         header.add(label("Mã hóa đơn: ", order.getOrderID(), true));
         header.add(label("Ngày lập: ", (order.getOrderDate() == null ? "" : formatter.format(order.getOrderDate())), false));
@@ -209,13 +209,12 @@ public class FormOrderManagement extends JPanel {
         header.add(label("Khách hàng: ", kh + (isBlank(phone) ? "" :" ("+phone+")"), false));
         root.add(header);
 
-        // Danh sách chi tiết phòng (OrderDetailRoom)
+        // Danh sách chi tiết phòng
         List<OrderDetailRoom> roomLines = orderDetailRoomBUS.getbyOrderID(order.getOrderID());
         JPanel pRooms = titledCard("Các phòng đã đặt");
         if (roomLines != null && !roomLines.isEmpty()) {
             for (OrderDetailRoom r : roomLines) {
                 String type = (r.getRoom() != null && r.getRoom().getRoomType() != null) ? r.getRoom().getRoomType().getTypeName() : "";
-
                 JPanel card = miniCard();
                 card.add(text("• " + (r.getRoom() == null ? "" : r.getRoom().getDescription())));
                 card.add(text("Loại phòng: " + type));
@@ -223,6 +222,7 @@ public class FormOrderManagement extends JPanel {
                         + " | Check-in: " + format(r.getCheckInDate(), formatter)
                         + " | Check-out: " + format(r.getCheckOutDate(), formatter)));
                 card.add(text("Hình thức: " + nullToEmpty(r.getBookingType())));
+                card.add(text("Trạng thái: " + nullToEmpty(r.getStatus())));
                 pRooms.add(card, "growx");
             }
         }
@@ -240,37 +240,33 @@ public class FormOrderManagement extends JPanel {
                             l -> l.getService().getServiceName(),
                             Collectors.summingInt(OrderDetailService::getQuantity)));
             agg.forEach((name, qty) -> pSvc.add(text("• " + name + "  × " + qty)));
-        }
-        else {
+        } else {
             pSvc.add(text("Không có dịch vụ."));
         }
         root.add(pSvc);
 
-        // tổng, vat, thành tiêền, tính tiền, QR
+        // Thanh toán
         JPanel footer = titledCard("Thanh toán");
         footer.setLayout(new MigLayout("insets 8, gap 10", "[grow][280!]", "[][][]push[]"));
 
-        // Tính tiền
         double total = order.getTotal();
         double vat = total * 0.10;
         double discountRate = (order.getPromotion() == null) ? 0D : (order.getPromotion().getDiscount() / 100.0);
         String promoTxt = (order.getPromotion() == null) ? "Không có" : ((int)order.getPromotion().getDiscount()) + "%";
         double amountDue = total + vat - (total * discountRate);
         boolean paidStatus = "Thanh toán".equalsIgnoreCase(order.getOrderStatus());
-        double uiDue = paidStatus ? 0d : amountDue;   // nêếu đã thanh toán thì tiền trong máy sẽ = 0
+        double uiDue = paidStatus ? 0d : amountDue;
 
-        // thông tin tiền phải trả
         footer.add(text("Tổng: " + formatVND(total)), "wrap");
         footer.add(text("VAT (10%): " + formatVND(vat)), "wrap");
         footer.add(text("Khuyến mãi: " + promoTxt), "wrap");
 
-        // máy đếm tiền
         JPanel cash = new JPanel(new MigLayout("insets 8, gap 6", "[grow,fill]", ""));
         cash.setOpaque(true);
         cash.setBackground(new Color(0x102E4A));
         cash.setBorder(new LineBorder(BORDER));
 
-        JLabel lblPaid = text("Khách đưa: " + formatVND(0));
+        JLabel lblPaid   = text("Khách đưa: " + formatVND(0));
         JLabel lblRemain = text("Còn thiếu: " + formatVND(uiDue));
         JLabel lblChange = text("Tiền thối: " + formatVND(0));
         cash.add(lblPaid,   "wrap");
@@ -294,39 +290,45 @@ public class FormOrderManagement extends JPanel {
 
         JPanel tools = new JPanel(new GridLayout(1, 2, 6, 6));
         tools.setOpaque(false);
-
         JButton btnExact = chipButton("Bằng đúng");
         btnExact.addActionListener(e -> {
             paid[0] = uiDue;
             updateCashUI(paid[0], uiDue, lblPaid, lblRemain, lblChange);
         });
-
         JButton btnClear = chipButton("Xoá");
         btnClear.addActionListener(e -> {
             paid[0] = 0;
             updateCashUI(paid[0], uiDue, lblPaid, lblRemain, lblChange);
         });
-
         tools.add(btnExact);
         tools.add(btnClear);
         cash.add(tools, "growx, wrap 10");
 
         JLabel lblFinal = boldText("Thành tiền: " + formatVND(uiDue));
         cash.add(lblFinal);
-
         footer.add(cash, "grow, wrap");
 
-        // QR + button
+        // QR + action
         JPanel action = new JPanel(new MigLayout("wrap, insets 0, gap 8", "[grow,fill]", "[]6[]10[]8[]"));
         action.setOpaque(false);
 
-        // Tiêu đề: nếu đã thanh toán thì đổi sang “ĐÃ THANH TOÁN”
-        JLabel lblQrTitle = new JLabel(paidStatus ? "ĐÃ THANH TOÁN" : "Phương thức thanh toán bằng mã QR", SwingConstants.CENTER);
+        // KIỂM TRA HOÀN TẤT CHECK-OUT --> Thì mới thanh toán dc
+        boolean allRoomsCompleted =
+                (roomLines != null && !roomLines.isEmpty())
+                        ? roomLines.stream().allMatch(r ->
+                        r.getStatus() != null && r.getStatus().trim().equalsIgnoreCase("Hoàn tất"))
+                        : true;
+
+        JLabel lblQrTitle = new JLabel(
+                paidStatus
+                        ? "ĐÃ THANH TOÁN"
+                        : (allRoomsCompleted ? "Phương thức thanh toán bằng mã QR"
+                        : "Còn phòng chưa check-out"),
+                SwingConstants.CENTER);
         lblQrTitle.setFont(BASE_FONT.deriveFont(Font.BOLD, 16f));
         lblQrTitle.setForeground(ACCENT2);
         action.add(lblQrTitle, "growx");
 
-        // Hình: nếu đã thanh toán thì hiển thị tick xanh, ngược lại hiện QR
         JLabel QR = new JLabel("", SwingConstants.CENTER);
         QR.setOpaque(false);
         QR.setPreferredSize(new Dimension(220, 220));
@@ -336,18 +338,33 @@ public class FormOrderManagement extends JPanel {
         action.add(QR, "growx");
 
         JButton btnPrint = primaryButton("In hóa đơn", false);
-        JButton btnPay = primaryButton("Thanh toán", true);
+        JButton btnPay   = primaryButton("Thanh toán", true);
         action.add(btnPrint, "growx");
-        action.add(btnPay, "growx");
+        action.add(btnPay,   "growx");
 
         footer.add(action, "cell 1 0, span 1 4, grow");
         root.add(footer, "growx");
 
-        btnPay.setEnabled(!paidStatus);
+        // Enable/Disable button thanh toán, in hóa đơn theo trạng thái
+        btnPay.setEnabled(!paidStatus && allRoomsCompleted);
+        btnPay.setToolTipText(btnPay.isEnabled() ? null : "Còn phòng chưa check-out");
         btnPrint.setEnabled(paidStatus);
 
-        // Actions
+        // events
         btnPay.addActionListener(e -> {
+            // CHECK LẠI LẦN NỮA TRƯỚC KHI GỌI BUS (tránh case dữ liệu thay đổi)
+            List<OrderDetailRoom> latest = orderDetailRoomBUS.getbyOrderID(order.getOrderID());
+            boolean ok = (latest != null && !latest.isEmpty())
+                    ? latest.stream().allMatch(r ->
+                    r.getStatus() != null && r.getStatus().trim().equalsIgnoreCase("Hoàn tất"))
+                    : true;
+
+            if (!ok) {
+                JOptionPane.showMessageDialog(this,
+                        "Còn phòng chưa check-out. Vui lòng hoàn tất check-out trước khi thanh toán.");
+                return;
+            }
+
             if (paid[0] < amountDue) {
                 double missing = amountDue - paid[0];
                 int opt = JOptionPane.showConfirmDialog(this,
@@ -373,7 +390,6 @@ public class FormOrderManagement extends JPanel {
             }
             ArrayList<OrderDetailRoom> rooms = orderDetailRoomBUS.getbyOrderID(order.getOrderID());
             ArrayList<OrderDetailService> services = orderDetailServiceBUS.getbyOrderID(order.getOrderID());
-
             Window owner = SwingUtilities.getWindowAncestor(this);
             new FormPayOrder(owner, order, rooms, services, QR_IMAGE_PATH).setVisible(true);
         });
@@ -381,6 +397,7 @@ public class FormOrderManagement extends JPanel {
         detailPanel.add(root, BorderLayout.CENTER);
         detailPanel.revalidate(); detailPanel.repaint();
     }
+
 
     private JPanel titledCard(String title) {
         JPanel p = new JPanel(new MigLayout("wrap, insets 8, gap 8", "[grow,fill]", ""));
