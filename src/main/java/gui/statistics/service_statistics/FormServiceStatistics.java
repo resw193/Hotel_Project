@@ -46,6 +46,7 @@ public class FormServiceStatistics extends JPanel {
         // ====== TOP BAR ======
         JPanel top = new JPanel(new MigLayout("insets 10 16 10 16", "[][180!]16[][180!]push[]", "[]"));
         top.setBackground(PANEL_TOP);
+        chartPanel.setBarSpacing(0.46f, 16);  // hẹp cột, tăng gap
 
         JLabel lbStart = new JLabel("Bắt đầu");
         lbStart.setForeground(TEXT);
@@ -67,7 +68,7 @@ public class FormServiceStatistics extends JPanel {
         add(top, "growx");
 
         // table (trái) + chart (phải)
-        JPanel body = new JPanel(new MigLayout("insets 0 12 12 12", "[grow][300!]", "[grow]"));
+        JPanel body = new JPanel(new MigLayout("insets 0 12 12 12, fill", "[grow][460!]", "[grow]"));
         body.setBackground(BG);
         add(body, "grow");
 
@@ -118,6 +119,7 @@ public class FormServiceStatistics extends JPanel {
 
         // CHART box (phải)
         JPanel chartBox = new JPanel(new MigLayout("insets 10 10 10 10, fill", "[grow]", "[][grow]"));
+        chartBox.setPreferredSize(new Dimension(460, 10));
         chartBox.setBackground(new Color(0x0E253D));
         chartBox.setBorder(new LineBorder(BORDER));
         lbChartTitle.setForeground(new Color(0xA7F3D0));

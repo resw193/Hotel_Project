@@ -10,11 +10,14 @@ import java.util.List;
 public class TopServiceBarChart extends JPanel {
     private final ArrayList<ServiceRanking> data = new ArrayList<>();
 
-    private final Color BG        = new Color(0x0B1F33);
-    private final Color PLOT_BG   = new Color(0x111E2B);
-    private final Color GRID      = new Color(0x183447);
-    private final Color NAME_COL  = new Color(0xFACC15);
-    private final Color AXIS_COL  = new Color(0x406F8F);
+    private final Color BG = new Color(0x0B1F33);
+    private final Color PLOT_BG = new Color(0x111E2B);
+    private final Color GRID = new Color(0x183447);
+    private final Color NAME_COL = new Color(0xFACC15);
+    private final Color AXIS_COL = new Color(0x406F8F);
+
+    private float barSlotRatio = 0.46f;
+    private int minGapPx = 16;
 
     public TopServiceBarChart() {
         setOpaque(true);
@@ -28,79 +31,98 @@ public class TopServiceBarChart extends JPanel {
         repaint();
     }
 
+    public void setBarSpacing(float barSlotRatio, int minGapPx) {
+        this.barSlotRatio = Math.max(0.2f, Math.min(0.8f, barSlotRatio));
+        this.minGapPx = Math.max(4, minGapPx);
+        repaint();
+    }
+
+    private String ellipsize(String s, int maxW, FontMetrics fm) {
+        if (fm.stringWidth(s) <= maxW) return s;
+        String ell = "...";
+        int allow = maxW - fm.stringWidth(ell);
+        if (allow <= 0) return ell;
+        int i = 0;
+        while (i < s.length() && fm.stringWidth(s.substring(0, i + 1)) <= allow) i++;
+        return s.substring(0, i) + ell;
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        int w = getWidth(), h = getHeight();
-        int padL = 16, padR = 8, padT = 22, padB = 32;
-        int plotX = padL, plotY = padT, plotW = w - padL - padR, plotH = h - padT - padB;
-
-        g2.setColor(PLOT_BG);
-        g2.fillRoundRect(plotX, plotY, plotW, plotH, 16, 16);
-
-        g2.setColor(GRID);
-        for (int i = 0; i <= 4; i++) {
-            int y = plotY + plotH - i * plotH / 4;
-            g2.drawLine(plotX + 8, y, plotX + plotW - 8, y);
-        }
-
-        if (data.isEmpty()) {
-            g2.setColor(new Color(255, 255, 255, 90));
-            String s = "Không có dữ liệu";
-            FontMetrics fm = g2.getFontMetrics(getFont().deriveFont(Font.PLAIN, 14f));
-            g2.drawString(s, (w - fm.stringWidth(s)) / 2, h / 2);
+        int n = (data == null) ? 0 : data.size();
+        if (n == 0) {
             g2.dispose();
             return;
         }
 
-        int n = data.size();
-        int maxQ = data.stream().mapToInt(ServiceRanking::getTotalQuantity).max().orElse(1);
+        int left = 56, right = 18, bottom = 46, top = 24;
+        int plotW = getWidth() - left - right;
+        int plotH = getHeight() - top - bottom;
 
-        int gap = Math.max(6, Math.min(12, plotW / Math.max(8, n * 4)));
-        int barW = Math.max(12, Math.min(36, (plotW - (n - 1) * gap - 24) / n));
-        int totalBars = n * barW + (n - 1) * gap;
-        int x = plotX + (plotW - totalBars) / 2;
+        // slot = bar + gap
+        double slot = plotW * 1.0 / n;
+        int barW = (int) Math.max(14, Math.min(64, slot * barSlotRatio));
+        int gap = (int) Math.max(minGapPx, Math.round(slot - barW));
+        slot = barW + gap;
 
-        Font nameFont = getFont().deriveFont(Font.BOLD, 12f);
-        FontMetrics fmName = g2.getFontMetrics(nameFont);
-        Font valueFont = getFont().deriveFont(Font.PLAIN, 12f);
-        FontMetrics fmVal = g2.getFontMetrics(valueFont);
+        double totalWidth = n * slot;
+        double xStart = left + Math.max(0, (plotW - totalWidth) / 2.0) + gap / 2.0;
 
-        for (ServiceRanking s : data) {
-            int q = Math.max(0, s.getTotalQuantity());
-            int barH = (int) ((q * 1.0 / maxQ) * (plotH - 44));
-            int y = plotY + plotH - barH - 20;
+        // font
+        Font labelFont = getFont().deriveFont(Font.BOLD, 11f);
+        Font valueFont = getFont().deriveFont(Font.BOLD, 12f);
+        FontMetrics fmLabel = g2.getFontMetrics(labelFont);
+        FontMetrics fmValue = g2.getFontMetrics(valueFont);
 
-            Paint old = g2.getPaint();
-            g2.setPaint(new GradientPaint(0, y, new Color(255, 179, 71),
-                    0, y + barH, new Color(255, 76, 41)));
-            g2.fillRoundRect(x, y, barW, barH, 8, 8);
-            g2.setPaint(old);
+        long maxQty = data.stream().mapToLong(ServiceRanking::getTotalQuantity).max().orElse(1);
+        for (int i = 0; i < n; i++) {
+            var it = data.get(i);
+            double x = xStart + i * slot;
+            double hRatio = (double) it.getTotalQuantity() / maxQty;
+            int barH = (int) Math.round(hRatio * (plotH - 6));
 
-            // value trên đầu cột
-            String v = String.valueOf(q);
+            int bx = (int) Math.round(x);
+            int by = top + (plotH - barH);
+
+
+            g2.setPaint(new GradientPaint(0, by, new Color(0xFFF3B0),
+                    0, by + barH, new Color(0xFF7A45)));
+            g2.fillRoundRect(bx, by, barW, barH, 10, 10);
+
+            // SỐ LƯỢNG TRÊN CỘT
+            String val = String.valueOf(it.getTotalQuantity());
             g2.setFont(valueFont);
-            g2.setColor(Color.WHITE);
-            g2.drawString(v, x + (barW - fmVal.stringWidth(v)) / 2, y - 4);
+            int vx = bx + barW / 2 - fmValue.stringWidth(val) / 2;
+            int vy = by - 6;
+            if (vy - fmValue.getAscent() < top + 2) {
+                vy = by + Math.min(barH - 4, fmValue.getAscent() + 4);
+                g2.setColor(new Color(0x0B1F33));
+            } else {
+                g2.setColor(new Color(0xFFFFFF)); // trắng nổi bật
+            }
+            g2.drawString(val, vx, vy);
 
-            // tên dịch vụ
-            String name = s.getServiceName();
-            if (name.length() > 12) name = name.substring(0, 12) + "…";
-            g2.setFont(nameFont);
-            g2.setColor(NAME_COL);
-            g2.drawString(name,
-                    x + (barW - fmName.stringWidth(name)) / 2,
-                    plotY + plotH - 6);
-
-            x += barW + gap;
+            g2.setFont(labelFont);
+            int maxLabelW = (int) Math.round(slot);
+            String name = ellipsize(it.getServiceName(), maxLabelW, fmLabel);
+            int nx = bx + barW / 2 - fmLabel.stringWidth(name) / 2;
+            int ny = getHeight() - 12;
+            g2.setColor(new Color(0xFDE68A));
+            g2.drawString(name, nx, ny);
         }
-
-        g2.setColor(AXIS_COL);
-        g2.drawString("SL", plotX + 6, plotY + 14);
-
         g2.dispose();
     }
+
+
+    private void drawCentered(Graphics2D g2, String s, int cx, int y) {
+        FontMetrics fm = g2.getFontMetrics();
+        int w = fm.stringWidth(s);
+        g2.setColor(new Color(0xFDE68A));
+        g2.drawString(s, cx - w / 2, y);
+    }
 }
+
