@@ -49,4 +49,40 @@ public class ServiceRankingDAO {
             connectDB.close(ps, null);
         }
     }
+
+    // Top các dịch vụ được sử dụng nhiều nhất trong khoảng thời gian start -> end
+    public ArrayList<ServiceRanking> getTopByRange(LocalDateTime start, LocalDateTime end, int topN) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        ArrayList<ServiceRanking> listTopService = new ArrayList<>();
+        String sql =
+                "SELECT serviceName, TotalQuantity, TotalRevenue " +
+                        "FROM (" +
+                        "   SELECT serviceName, TotalQuantity, TotalRevenue, " +
+                        "          ROW_NUMBER() OVER (ORDER BY TotalQuantity DESC) rn " +
+                        "   FROM fn_ServiceStats(?, ?)" +
+                        ") x WHERE rn <= ? " +
+                        "ORDER BY TotalQuantity DESC";
+        try {
+            conn = connectDB.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setTimestamp(1, Timestamp.valueOf(start));
+            ps.setTimestamp(2, Timestamp.valueOf(end));
+            ps.setInt(3, topN);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                listTopService.add(new ServiceRanking(
+                        rs.getString("serviceName"),
+                        rs.getInt("TotalQuantity"),
+                        rs.getDouble("TotalRevenue")));
+            }
+
+            return listTopService;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }  
