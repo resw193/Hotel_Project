@@ -16,6 +16,7 @@ import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
 import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 
 import gui.dashboard.FormDashboard;
+import gui.loadingscreen.SplashScreen;
 import gui.login.forms.Home;
 import raven.toast.Notifications;
 
@@ -118,6 +119,10 @@ public class Application extends JFrame {
         UIManager.put("defaultFont", new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 13));
         FlatMacDarkLaf.setup();
         EventQueue.invokeLater(() -> {
+            // Loading screen
+            new SplashScreen(null, true).setVisible(true);
+
+            // Application
             app = new Application();
             app.setVisible(true);
         });

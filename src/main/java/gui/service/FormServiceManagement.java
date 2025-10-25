@@ -10,7 +10,6 @@ import raven.toast.Notifications;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -24,10 +23,8 @@ public class FormServiceManagement extends JPanel {
     private static final Color TEXT_PRIMARY  = new Color(0xE9EEF6);
     private static final Color TEXT_MUTED    = new Color(0xB8C4D4);
     private static final Color GOLD_PRIMARY  = new Color(0xF5C452);
-    private static final Color SUCCESS_BG    = new Color(0x1E9E8F);
-    private static final Color DANGER_BG     = new Color(0xD64545);
 
-    private ServiceBUS serviceBUS = new ServiceBUS();
+    private final ServiceBUS serviceBUS = new ServiceBUS();
 
     private JComboBox<String> cboFilter;
     private JButton btnAddNew;
@@ -35,13 +32,13 @@ public class FormServiceManagement extends JPanel {
     private JScrollPane scroll;
 
     public FormServiceManagement() {
-        setLayout(new MigLayout("fill, wrap, insets 0", "[grow]", "[grow 0][grow]"));
+        setLayout(new MigLayout("fill, insets 0, wrap 1", "[grow]", "[grow 0][grow]"));
         setBackground(BG);
 
-        // Top bar
+        // --- TOP BAR ---
         JPanel top = new JPanel(new MigLayout("insets 12 16 12 16", "[grow]push[][]", "[]"));
         top.setBackground(PANEL_TOP);
-        top.setBorder(new EmptyBorder(0,0,0,0));
+        top.setBorder(new EmptyBorder(0, 0, 0, 0));
         add(top, "growx");
 
         JLabel title = new JLabel("Dịch vụ | Services");
@@ -49,68 +46,74 @@ public class FormServiceManagement extends JPanel {
         title.setFont(title.getFont().deriveFont(Font.BOLD, 18f));
         top.add(title, "left");
 
-        cboFilter = new JComboBox<>(new String[]{"All", "Food", "Drink"});
+        cboFilter = new JComboBox<>(new String[]{"All", "Food", "Drink", "Laundry"});
         cboFilter.putClientProperty(FlatClientProperties.STYLE,
                 "arc:12; background:#102D4A; foreground:#E9EEF6; borderColor:#274A6B; padding:6,12,6,12");
         top.add(cboFilter, "w 150!");
 
-        FlatSVGIcon.ColorFilter goldFilter = new FlatSVGIcon.ColorFilter() {
-            @Override public Color filter(Color c) { return GOLD_PRIMARY; }
-        };
         FlatSVGIcon addTopIcon = new FlatSVGIcon("icon/svg/add.svg", 0.35f);
-        addTopIcon.setColorFilter(goldFilter);
+        addTopIcon.setColorFilter(new FlatSVGIcon.ColorFilter() {
+            @Override
+            public Color filter(Color c) {
+                return GOLD_PRIMARY;
+            }
+        });
+
         btnAddNew = new JButton("ADD NEW", addTopIcon);
         stylePrimary(btnAddNew);
-        top.add(btnAddNew, "w 120!");
+        top.add(btnAddNew, "w 130!");
 
-        grid = new JPanel(new MigLayout("wrap 5, insets 16, gap 16", "[grow,fill]", ""));
+        // --- GRID AREA ---
+        grid = new JPanel();
         grid.setBackground(BG);
+
+        // Responsive layout: tự co số cột theo chiều rộng
+        grid.setLayout(new MigLayout(
+                "wrap 5, insets 20, gapx 20, gapy 20",
+                "[grow,fill] [grow,fill] [grow,fill] [grow,fill] [grow,fill]",
+                "[]"));
 
         scroll = new JScrollPane(grid);
         scroll.setBorder(null);
-        scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        scroll.setBackground(BG);
+        scroll.getViewport().setBackground(BG);
         scroll.getVerticalScrollBar().putClientProperty(FlatClientProperties.STYLE,
                 "width:10; background:#0B1F33; track:#0B1F33; thumb:#274A6B; trackArc:999");
+        scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scroll.getVerticalScrollBar().setUnitIncrement(20);
-        add(scroll, "grow, push");
 
-        // Responsive layout: thay đổi số cột theo độ rộng màn hình
-        scroll.addComponentListener(new java.awt.event.ComponentAdapter() {
-            @Override
-            public void componentResized(java.awt.event.ComponentEvent e) {
-                int width = scroll.getViewport().getWidth();
-                int cardWidth = 240;
-                int cols = Math.max(1, width / (cardWidth + 20));
-                ((MigLayout) grid.getLayout()).setLayoutConstraints(
-                        "wrap " + cols + ", insets 16, gap 16");
-                grid.revalidate();
-            }
-        });
         add(scroll, "grow");
 
-        // Events
+        // --- EVENTS ---
         cboFilter.addActionListener(e -> loadData());
-
         btnAddNew.addActionListener(e -> {
-            FormAddService FormAddService = new FormAddService(FormServiceManagement.this);
-            FormAddService.setModal(true);
-            FormAddService.setLocationRelativeTo(this);
-            FormAddService.setVisible(true);
+            FormAddService formAddService = new FormAddService(FormServiceManagement.this);
+            formAddService.setModal(true);
+            formAddService.setLocationRelativeTo(this);
+            formAddService.setVisible(true);
             loadData();
+        });
+
+        // Click chuột lấy lại focus để cuộn bằng phím
+        scroll.addMouseWheelListener(e -> scroll.requestFocusInWindow());
+        grid.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                scroll.requestFocusInWindow();
+            }
         });
 
         loadData();
     }
 
-    public void loadData() {
+    void loadData() {
         String selected = String.valueOf(cboFilter.getSelectedItem());
-
         List<Service> data = switch (selected) {
-            case "Food"  -> serviceBUS.getByType("Food");
+            case "Food" -> serviceBUS.getByType("Food");
             case "Drink" -> serviceBUS.getByType("Drink");
-            default      -> serviceBUS.getAll();
+            case "Laundry" -> serviceBUS.getByType("Laundry");
+            default -> serviceBUS.getAll();
         };
-
         LoadDataToDisplay(data);
     }
 
@@ -118,23 +121,28 @@ public class FormServiceManagement extends JPanel {
         grid.removeAll();
 
         FlatSVGIcon.ColorFilter whiteFilter = new FlatSVGIcon.ColorFilter() {
-            @Override public Color filter(Color c) { return Color.WHITE; }
+            @Override
+            public Color filter(Color c) {
+                return Color.WHITE;
+            }
         };
 
         FlatSVGIcon.ColorFilter mutedFilter = new FlatSVGIcon.ColorFilter() {
-            @Override public Color filter(Color c) { return TEXT_MUTED; }
+            @Override
+            public Color filter(Color c) {
+                return TEXT_MUTED;
+            }
         };
 
         for (Service service : services) {
-            JPanel card = new JPanel(new MigLayout("wrap 6, insets 14, gapy 6", "[grow]", "[]"));
+            JPanel card = new JPanel(new MigLayout("wrap 1, insets 10, gapy 6", "[grow,fill]", "[]"));
             card.setBackground(CARD_BG);
             card.putClientProperty(FlatClientProperties.STYLE, "arc:16; borderColor:#153C5B");
 
             JLabel imgService = new JLabel("", SwingConstants.CENTER);
-            imgService.setPreferredSize(new Dimension(140, 180));
+            imgService.setPreferredSize(new Dimension(140, 120));
 
-            String path = service.getImgSource();
-            ImageIcon icon = loadImageFromResourcesOrFile(path, 120, 120);
+            ImageIcon icon = loadImageFromResourcesOrFile(service.getImgSource(), 120, 120);
             if (icon != null) {
                 imgService.setIcon(icon);
             } else {
@@ -146,68 +154,40 @@ public class FormServiceManagement extends JPanel {
             JLabel name = new JLabel(service.getServiceName(), SwingConstants.CENTER);
             name.setForeground(TEXT_PRIMARY);
             name.setFont(name.getFont().deriveFont(Font.BOLD, 14f));
-            name.putClientProperty(FlatClientProperties.STYLE, "border:6,0,6,0");
 
-            JLabel qty = new JLabel("Quantity: " + service.getQuantity());
+            JLabel qty = new JLabel("Số lượng: " + service.getQuantity(), SwingConstants.CENTER);
             qty.setForeground(TEXT_MUTED);
 
-            JLabel price = new JLabel(String.format("Price: %,.2f VND", service.getPrice()), SwingConstants.RIGHT);
-            price.setForeground(TEXT_MUTED);
+            JLabel price = new JLabel(String.format("Giá: %,.2f VND", service.getPrice()), SwingConstants.CENTER);
+            price.setForeground(GOLD_PRIMARY);
+            price.setFont(price.getFont().deriveFont(Font.BOLD, 13f));
 
-            // FlatSVGIcon cho các button
-            FlatSVGIcon delI = new FlatSVGIcon("icon/svg/delete.svg", 0.35f); delI.setColorFilter(whiteFilter);
-            JButton btnDelete = new JButton("Delete", delI);
-            FlatSVGIcon editI = new FlatSVGIcon("icon/svg/edit.svg", 0.35f);   editI.setColorFilter(whiteFilter);
-            JButton btnUpdate = new JButton("Update", editI);
-            FlatSVGIcon addI  = new FlatSVGIcon("icon/svg/add.svg", 0.35f);    addI.setColorFilter(whiteFilter);
-            JButton btnAddQty = new JButton("Add", addI);
+            JPanel btnPanel = new JPanel(new MigLayout("insets 0, gapx 6", "[grow,fill][grow,fill][grow,fill]"));
+            btnPanel.setOpaque(false);
 
+            JButton btnDelete = new JButton("Delete", new FlatSVGIcon("icon/svg/delete.svg", 0.35f));
+            ((FlatSVGIcon) btnDelete.getIcon()).setColorFilter(whiteFilter);
             styleDanger(btnDelete);
+
+            JButton btnUpdate = new JButton("Update", new FlatSVGIcon("icon/svg/edit.svg", 0.35f));
+            ((FlatSVGIcon) btnUpdate.getIcon()).setColorFilter(whiteFilter);
             styleSuccess(btnUpdate);
+
+            JButton btnAddQty = new JButton("Add", new FlatSVGIcon("icon/svg/add.svg", 0.35f));
+            ((FlatSVGIcon) btnAddQty.getIcon()).setColorFilter(whiteFilter);
             stylePrimary(btnAddQty);
 
-            card.add(imgService,    "growx, span 6");
-            card.add(name,      "growx, span 6");
-            card.add(qty,       "growx, span 3");
-            card.add(price,     "growx, span 3");
-            card.add(btnDelete, "growx, span 2");
-            card.add(btnUpdate, "growx, span 2");
-            card.add(btnAddQty, "growx, span 2");
+            btnPanel.add(btnDelete);
+            btnPanel.add(btnUpdate);
+            btnPanel.add(btnAddQty);
 
-            btnDelete.addActionListener(e -> {
-                int opt = JOptionPane.showConfirmDialog(this, "Bạn có chắc muốn xóa dịch vụ này không?", "Confirm", JOptionPane.YES_NO_OPTION);
-                if (opt == JOptionPane.YES_OPTION) {
-                    try {
-                        if (serviceBUS.delete(service.getServiceID())) {
-                            Notifications.getInstance().show(Notifications.Type.INFO, Notifications.Location.BOTTOM_LEFT, "Đã xóa");
-                            loadData();
-                        }
-                        else {
-                            JOptionPane.showMessageDialog(this, "Không thể xóa", "Failed", JOptionPane.ERROR_MESSAGE);
-                        }
-                    } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
-                    }
-                }
-            });
+            card.add(imgService, "growx");
+            card.add(name, "growx");
+            card.add(qty, "growx");
+            card.add(price, "growx");
+            card.add(btnPanel, "growx");
 
-            btnUpdate.addActionListener(e -> {
-                FormUpdateService formUpdateService = new FormUpdateService(FormServiceManagement.this, service);
-                formUpdateService.setModal(true);
-                formUpdateService.setLocationRelativeTo(this);
-                formUpdateService.setVisible(true);
-                loadData();
-            });
-
-            btnAddQty.addActionListener(e -> {
-                FormUpdateQuantityService formUpdateQuantityService = new FormUpdateQuantityService(service);
-                formUpdateQuantityService.setModal(true);
-                formUpdateQuantityService.setLocationRelativeTo(this);
-                formUpdateQuantityService.setVisible(true);
-                loadData();
-            });
-
-            grid.add(card, "grow");
+            grid.add(card);
         }
 
         grid.revalidate();
@@ -216,20 +196,20 @@ public class FormServiceManagement extends JPanel {
 
     private void stylePrimary(AbstractButton b) {
         b.putClientProperty(FlatClientProperties.STYLE,
-                "arc:12; background:#F5C452; foreground:#0B1F33; borderColor:#F1B93A; " +
-                        "hoverBackground:#FFD36E; focusWidth:1; innerFocusWidth:0; margin:6,10,6,10");
+                "arc:12; background:#F5C452; foreground:#0B1F33; borderColor:#F1B93A;" +
+                        "hoverBackground:#FFD36E; focusWidth:1; innerFocusWidth:0; margin:6,4,6,4");
     }
 
     private void styleSuccess(AbstractButton b) {
         b.putClientProperty(FlatClientProperties.STYLE,
-                "arc:12; background:#1E9E8F; foreground:#FFFFFF; borderColor:#178C7F; " +
-                        "hoverBackground:#1A8A7E; focusWidth:1; innerFocusWidth:0; margin:6,10,6,10");
+                "arc:12; background:#1E9E8F; foreground:#FFFFFF; borderColor:#178C7F;" +
+                        "hoverBackground:#1A8A7E; focusWidth:1; innerFocusWidth:0; margin:6,4,6,4");
     }
 
     private void styleDanger(AbstractButton b) {
         b.putClientProperty(FlatClientProperties.STYLE,
-                "arc:12; background:#D64545; foreground:#FFFFFF; borderColor:#BF3E3E; " +
-                        "hoverBackground:#B73A3A; focusWidth:1; innerFocusWidth:0; margin:6,10,6,10");
+                "arc:12; background:#D64545; foreground:#FFFFFF; borderColor:#BF3E3E;" +
+                        "hoverBackground:#B73A3A; focusWidth:1; innerFocusWidth:0; margin:6,4,6,4");
     }
 
     private ImageIcon loadImageFromResourcesOrFile(String path, int w, int h) {
@@ -237,9 +217,8 @@ public class FormServiceManagement extends JPanel {
             Image img = null;
             if (path != null && !path.isBlank()) {
                 File f = new File(path);
-                if (f.exists()) {
-                    img = new ImageIcon(f.getAbsolutePath()).getImage();
-                } else {
+                if (f.exists()) img = new ImageIcon(f.getAbsolutePath()).getImage();
+                else {
                     java.net.URL u = getClass().getResource(path.startsWith("/") ? path : "/" + path);
                     if (u != null) img = new ImageIcon(u).getImage();
                 }

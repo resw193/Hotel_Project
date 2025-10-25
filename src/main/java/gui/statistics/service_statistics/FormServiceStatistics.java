@@ -3,6 +3,7 @@ package gui.statistics.service_statistics;
 import bus.ServiceRankingBUS;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.toedter.calendar.JDateChooser;
+import entity.ServiceRanking;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
@@ -13,7 +14,9 @@ import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.text.NumberFormat;
 import java.time.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class FormServiceStatistics extends JPanel {
@@ -30,14 +33,20 @@ public class FormServiceStatistics extends JPanel {
     private JTable table;
 
     private JDateChooser dcStart, dcEnd;
-    private NumberFormat VND = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
+    private final NumberFormat VND = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
+
+    // Chart panel
+    private TopServiceBarChart chartPanel = new TopServiceBarChart();
+    private JLabel lbChartTitle = new JLabel("Top dịch vụ được sử dụng nhiều nhất");
 
     public FormServiceStatistics() {
         setLayout(new MigLayout("fill, wrap, insets 0", "[grow]", "[grow 0][grow]"));
         setBackground(BG);
 
+        // ====== TOP BAR ======
         JPanel top = new JPanel(new MigLayout("insets 10 16 10 16", "[][180!]16[][180!]push[]", "[]"));
         top.setBackground(PANEL_TOP);
+        chartPanel.setBarSpacing(0.46f, 16);  // hẹp cột, tăng gap
 
         JLabel lbStart = new JLabel("Bắt đầu");
         lbStart.setForeground(TEXT);
@@ -57,6 +66,11 @@ public class FormServiceStatistics extends JPanel {
         top.add(dcEnd);
         top.add(btnReload);
         add(top, "growx");
+
+        // table (trái) + chart (phải)
+        JPanel body = new JPanel(new MigLayout("insets 0 12 12 12, fill", "[grow][460!]", "[grow]"));
+        body.setBackground(BG);
+        add(body, "grow");
 
         // TABLE
         table = new JTable(tableModel) {
@@ -102,7 +116,25 @@ public class FormServiceStatistics extends JPanel {
         JScrollPane sp = new JScrollPane(table);
         sp.getViewport().setBackground(BG);
         sp.setBorder(new LineBorder(BORDER));
-        add(sp, "grow");
+
+        // CHART box (phải)
+        JPanel chartBox = new JPanel(new MigLayout("insets 10 10 10 10, fill", "[grow]", "[][grow]"));
+        chartBox.setPreferredSize(new Dimension(460, 10));
+        chartBox.setBackground(new Color(0x0E253D));
+        chartBox.setBorder(new LineBorder(BORDER));
+        lbChartTitle.setForeground(new Color(0xA7F3D0));
+        lbChartTitle.setFont(lbChartTitle.getFont().deriveFont(Font.BOLD, 14f));
+
+        chartBox.add(lbChartTitle, "split 2, left, gapbottom 6");
+        JLabel lbHint = new JLabel("");
+        lbHint.setForeground(new Color(0x7DD3FC));
+        lbHint.setFont(lbHint.getFont().deriveFont(Font.PLAIN, 12f));
+        chartBox.add(lbHint, "wrap");
+        chartBox.add(chartPanel, "grow");
+
+        // add vào body
+        body.add(sp, "grow");
+        body.add(chartBox, "grow");
 
         // default range: đầu tháng -> hôm nay
         LocalDate today = LocalDate.now();
@@ -110,16 +142,16 @@ public class FormServiceStatistics extends JPanel {
         setChooserDate(dcEnd, Date.from(today.atTime(23,59,59).atZone(ZoneId.systemDefault()).toInstant()));
 
         // events
-        PropertyChangeListener pcl = evt -> { if ("date".equals(evt.getPropertyName())) loadDataToTable(); };
+        PropertyChangeListener pcl = evt -> { if ("date".equals(evt.getPropertyName())) loadData(); };
         dcStart.getDateEditor().addPropertyChangeListener(pcl);
         dcEnd.getDateEditor().addPropertyChangeListener(pcl);
-        btnReload.addActionListener(e -> loadDataToTable());
+        btnReload.addActionListener(e -> loadData());
 
         // first load
-        loadDataToTable();
+        loadData();
     }
 
-    private void loadDataToTable() {
+    private void loadData() {
         LocalDateTime start = startOfDay(dcStart.getDate());
         LocalDateTime end = endOfDay(dcEnd.getDate());
         if (start == null || end == null) return;
@@ -129,21 +161,25 @@ public class FormServiceStatistics extends JPanel {
             return;
         }
 
+        // bảng
         tableModel.setServiceRankings(serviceRankingBUS.getByRange(start, end));
+
+        // chart (Top 8 theo số lượng)
+        ArrayList<ServiceRanking> top = serviceRankingBUS.getTopByRange(start, end, 8);
+        chartPanel.setData(top);
     }
 
     private static JDateChooser dateChooser() {
         JDateChooser dc = new JDateChooser();
         dc.setDateFormatString("dd/MM/yyyy");
-        dc.putClientProperty(FlatClientProperties.STYLE, "arc:10; background:#102D4A; foreground:#E9EEF6; borderColor:#274A6B; padding:6,10,6,10;");
-
+        dc.putClientProperty(FlatClientProperties.STYLE,
+                "arc:10; background:#102D4A; foreground:#E9EEF6; borderColor:#274A6B; padding:6,10,6,10;");
         return dc;
     }
 
     private static void setChooserDate(JDateChooser c, Date d) {
         c.setDate(d);
     }
-
     private static LocalDateTime startOfDay(Date d) {
         if (d == null) return null;
         return d.toInstant().atZone(ZoneId.systemDefault()).toLocalDate().atStartOfDay();
@@ -154,10 +190,10 @@ public class FormServiceStatistics extends JPanel {
         return ld.atTime(LocalTime.of(23, 59, 59));
     }
 
+    // render tiền tệ
     private static class CurrencyRenderer extends DefaultTableCellRenderer {
-        private NumberFormat fmt;
-        private DefaultTableCellRenderer base;
-
+        private final NumberFormat fmt;
+        private final DefaultTableCellRenderer base;
         CurrencyRenderer(NumberFormat fmt, DefaultTableCellRenderer base) {
             this.fmt = fmt; this.base = base;
         }
