@@ -95,6 +95,17 @@ public class FormAbout extends JPanel {
                 """
         );
         content.add(softwareCard, "growx");
+        content.add(createCard("Đơn vị phát triển - Nhóm 9",
+                "Nhóm 9 gồm 5 thành viên: Nguyễn Bảo Định — Leader, Trần Ngọc Oanh — Reporter, Hoàng Ngọc Hải — Takenoter, Dương Thiên Ân — Time-checker\n"));
+
+        // Cuộn nếu nội dung dài
+        JScrollPane scroll = new JScrollPane(content);
+        scroll.setBorder(null);
+        scroll.getViewport().setOpaque(false);
+        scroll.setOpaque(false);
+        scroll.getVerticalScrollBar().setUnitIncrement(20);
+
+        add(scroll, BorderLayout.CENTER);
     }
 
     private JPanel createCard(String header, String htmlContent) {
