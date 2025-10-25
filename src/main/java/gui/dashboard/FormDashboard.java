@@ -280,19 +280,7 @@ public class FormDashboard extends JPanel {
         int targetOcc = 75; // %
         double occNow = (totalRooms > 0) ? (busyRooms * 100.0 / totalRooms) : 0;
 
-        String goals = """
-                • Mục tiêu doanh thu tháng tới: %s
-                  → Còn thiếu: %s để đạt mốc.
-                • Mục tiêu tỉ lệ lấp đầy phòng: %d%% (hiện tại: %.0f%%).
-                • Hành động gợi ý:
-                  – Chạy Flash Sale cuối tuần cho phòng trống > 2 đêm.
-                  – Gói combo “Phòng + đồ uống” tăng cross-sell dịch vụ.
-                  – Remarketing khách hàng có ≥ 10 điểm loyalty.
-                """.formatted(
-                formatVN(targetRevenue),
-                formatVN(Math.max(0, targetRevenue - sumThisMonth)),
-                targetOcc, occNow
-        );
+        String goals = "• Mục tiêu doanh thu tháng tới: %s→ Còn thiếu: %s để đạt mốc. • Mục tiêu tỉ lệ lấp đầy phòng: %d%% (hiện tại: %.0f%%). • Hành động gợi ý:– Chạy Flash Sale cuối tuần cho phòng trống > 2 đêm.– Gói combo “Phòng + đồ uống” tăng cross-sell dịch vụ.– Remarketing khách hàng có ≥ 10 điểm loyalty.".formatted(formatVN(targetRevenue),formatVN(Math.max(0, targetRevenue - sumThisMonth)),targetOcc, occNow);
         txtGoals.setText(goals);
 
         List<String> alerts = new ArrayList<>();
