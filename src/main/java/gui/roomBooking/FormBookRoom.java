@@ -121,7 +121,7 @@ public class FormBookRoom extends JDialog {
             return;
         }
 
-        if (!phone.matches("\\d{9,11}")) {
+        if (!phone.matches("\\d{10,11}")) {
             JOptionPane.showMessageDialog(this, "Số điện thoại không hợp lệ.");
             txtPhone.requestFocus(); return;
         }
