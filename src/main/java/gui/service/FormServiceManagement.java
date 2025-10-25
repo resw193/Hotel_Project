@@ -63,28 +63,27 @@ public class FormServiceManagement extends JPanel {
         stylePrimary(btnAddNew);
         top.add(btnAddNew, "w 120!");
 
-        // Grid 5 cột
-        grid = new JPanel(new MigLayout("wrap 5, insets 16, gap 16",
-                "[grow,fill] [grow,fill] [grow,fill] [grow,fill] [grow,fill]", ""));
+        grid = new JPanel(new MigLayout("wrap 5, insets 16, gap 16", "[grow,fill]", ""));
         grid.setBackground(BG);
+
         scroll = new JScrollPane(grid);
         scroll.setBorder(null);
+        scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scroll.getVerticalScrollBar().putClientProperty(FlatClientProperties.STYLE,
                 "width:10; background:#0B1F33; track:#0B1F33; thumb:#274A6B; trackArc:999");
-     // ✅ Hỗ trợ cuộn bằng phím lên / xuống (kích hoạt toàn cục)
-     // ✅ Hỗ trợ cuộn bằng phím lên / xuống (vẫn hoạt động sau khi dùng chuột)
         scroll.getVerticalScrollBar().setUnitIncrement(20);
+        add(scroll, "grow, push");
 
-        // Cho phép scroll bắt phím
-        scroll.setFocusable(true);
-        grid.setFocusable(true);
-
-        // Khi người dùng click hoặc cuộn chuột → scroll lấy lại focus
-        scroll.addMouseWheelListener(e -> scroll.requestFocusInWindow());
-        grid.addMouseListener(new MouseAdapter() {
+        // Responsive layout: thay đổi số cột theo độ rộng màn hình
+        scroll.addComponentListener(new java.awt.event.ComponentAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) {
-                scroll.requestFocusInWindow();
+            public void componentResized(java.awt.event.ComponentEvent e) {
+                int width = scroll.getViewport().getWidth();
+                int cardWidth = 240;
+                int cols = Math.max(1, width / (cardWidth + 20));
+                ((MigLayout) grid.getLayout()).setLayoutConstraints(
+                        "wrap " + cols + ", insets 16, gap 16");
+                grid.revalidate();
             }
         });
         add(scroll, "grow");
