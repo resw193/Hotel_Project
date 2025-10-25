@@ -151,10 +151,10 @@ public class FormServiceManagement extends JPanel {
             name.setFont(name.getFont().deriveFont(Font.BOLD, 14f));
             name.putClientProperty(FlatClientProperties.STYLE, "border:6,0,6,0");
 
-            JLabel qty = new JLabel("Quantity: " + service.getQuantity());
+            JLabel qty = new JLabel("Số lượng: " + service.getQuantity());
             qty.setForeground(TEXT_MUTED);
 
-            JLabel price = new JLabel(String.format("Price: %,.2f VND", service.getPrice()), SwingConstants.RIGHT);
+            JLabel price = new JLabel(String.format("Giá: %,.2f VND", service.getPrice()), SwingConstants.RIGHT);
             price.setForeground(TEXT_MUTED);
 
             // FlatSVGIcon cho các button
